@@ -1,5 +1,3 @@
-1231210
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -238,14 +236,14 @@
      nfl: "pass_yds" | "pass_tds" | "rush_yds" | "rush_tds" | "rec_yds" | "receptions" | "rec_tds" | "any_td" (anytime TD, rush+rec)
 */
 const BETS = [
-  { id:"s1", kind:"sb", player:"Nasim Nunez",      line:0.5, side:"over", odds:"+165", game:"PIT @ WSH", start:"6:45p" },
-  { id:"s2", kind:"sb", player:"Chandler Simpson",  line:0.5, side:"over", odds:"+165", game:"TB @ HOU",  start:"8:15p" },
-  { id:"s3", kind:"sb", player:"Josh Naylor",       line:0.5, side:"over", odds:"+525", game:"TOR @ SEA", start:"10:10p" },
-  { id:"f1", kind:"fs", player:"Elly De La Cruz",   line:7,   side:"over", odds:null,   game:"BAL @ CIN", start:"7:10p" },
-  { id:"f2", kind:"fs", player:"Willson Contreras", line:5,   side:"over", odds:null,   game:"BOS @ LAA", start:"9:38p" },
-  { id:"f3", kind:"fs", player:"Owen Caissie",      line:4,   side:"over", odds:null,   game:"MIA @ ATH", start:"9:40p" },
+  { id:"f1", kind:"fs", player:"James Wood",         line:5.5, side:"over", odds:null, game:"PIT @ WSH", start:"1:05p" },
+  { id:"f2", kind:"fs", player:"Royce Lewis",        line:4.5, side:"over", odds:null, game:"MIN @ NYY", start:"1:35p" },
+  { id:"f3", kind:"fs", player:"Jonathan Aranda",    line:5.5, side:"over", odds:null, game:"TB @ HOU",  start:"7:10p" },
+  { id:"f4", kind:"fs", player:"Carson Benge",       line:5,   side:"over", odds:null, game:"NYM @ ATL", start:"8:08p" },
+  { id:"f5", kind:"fs", player:"Willson Contreras",  line:4.5, side:"over", odds:null, game:"BOS @ LAA", start:"9:38p" },
+  { id:"f6", kind:"fs", player:"Freddie Freeman",    line:5.5, side:"over", odds:null, game:"SD @ LAD",  start:"10:10p" },
 ];
-const SLATE_DATE = "2026-07-03";           // blank = auto (today in US-Eastern). Lock a day with "YYYY-MM-DD".
+const SLATE_DATE = "";           // blank = auto (today in US-Eastern). Lock a day with "YYYY-MM-DD".
 const REFRESH_MS = 30000;
 function todayET(){ try{ return new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"}); }catch(_){ return new Date().toISOString().slice(0,10); } }
 const EFFECTIVE_DATE = (SLATE_DATE && /^\d{4}-\d{2}-\d{2}$/.test(SLATE_DATE)) ? SLATE_DATE : todayET();
@@ -254,11 +252,11 @@ const EFFECTIVE_DATE = (SLATE_DATE && /^\d{4}-\d{2}-\d{2}$/.test(SLATE_DATE)) ? 
    sport: "mlb" (statsapi.mlb.com) | "nfl" or "nba" (ESPN's public scoreboard/summary feed) */
 const GAME_META = {
   "PIT @ WSH":{away:"Pittsburgh Pirates",home:"Washington Nationals",sport:"mlb"},
+  "MIN @ NYY":{away:"Minnesota Twins",home:"New York Yankees",sport:"mlb"},
   "TB @ HOU":{away:"Tampa Bay Rays",home:"Houston Astros",sport:"mlb"},
-  "TOR @ SEA":{away:"Toronto Blue Jays",home:"Seattle Mariners",sport:"mlb"},
-  "BAL @ CIN":{away:"Baltimore Orioles",home:"Cincinnati Reds",sport:"mlb"},
+  "NYM @ ATL":{away:"New York Mets",home:"Atlanta Braves",sport:"mlb"},
   "BOS @ LAA":{away:"Boston Red Sox",home:"Los Angeles Angels",sport:"mlb"},
-  "MIA @ ATH":{away:"Miami Marlins",home:"Athletics",sport:"mlb"},
+  "SD @ LAD":{away:"San Diego Padres",home:"Los Angeles Dodgers",sport:"mlb"},
 };
 
 const STATUS = {
