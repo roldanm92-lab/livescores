@@ -107,6 +107,14 @@
   .feed-filter button[data-filter="hr"].is-active{color:#15784A;border-color:#BFE3CE;background:#E6F4EC}
   .feed-filter button[data-filter="sb"].is-active{color:#946410;border-color:#EED9A0;background:#FBF1DB}
   .feed-badge-tag{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .mybets{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+  .mybet-row{background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    box-shadow:0 1px 2px rgba(20,24,28,.03);padding:13px 16px}
+  .mybet-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .mybet-main{flex:1;min-width:0}
+  .mybet-game{margin-top:4px;font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums}
+  .mybet-bar{margin-top:11px;height:5px;border-radius:999px;background:var(--line2);overflow:hidden}
+  .mybet-bar-fill{height:100%;border-radius:999px;transition:width .3s}
   .feed-layout{display:flex;gap:0;align-items:flex-start}
   .col-resizer{width:14px;flex-shrink:0;cursor:col-resize;position:relative;align-self:stretch;touch-action:none}
   .col-resizer::after{content:"";position:absolute;top:8px;bottom:8px;left:6px;width:2px;background:var(--line);border-radius:2px;transition:background .15s}
@@ -201,11 +209,15 @@
   <div id="banner"></div>
   <div class="tabs" id="tabs">
     <button class="tab is-active" data-tab="board">Board</button>
+    <button class="tab" data-tab="mybets">My Bets</button>
     <button class="tab" data-tab="feed">Feed</button>
   </div>
   <div id="boardPane">
     <div id="summary"></div>
     <div id="board" class="board"></div>
+  </div>
+  <div id="mybetsPane" style="display:none">
+    <div id="mybets" class="mybets"></div>
   </div>
   <div id="feedPane" style="display:none">
     <div class="feed-filter" id="feedFilter">
@@ -258,6 +270,17 @@ const BETS = [
   { id:"f4", kind:"fs", player:"Carson Benge",       line:5,   side:"over", odds:null, game:"NYM @ ATL", start:"8:08p" },
   { id:"f5", kind:"fs", player:"Willson Contreras",  line:4.5, side:"over", odds:null, game:"BOS @ LAA", start:"9:38p" },
   { id:"f6", kind:"fs", player:"Freddie Freeman",    line:5.5, side:"over", odds:null, game:"SD @ LAD",  start:"10:10p" },
+  { id:"h1", kind:"hr", player:"Owen Caissie",       line:0.5, side:"over", odds:"+325", game:"MIA @ ATH", start:"9:40p" },
+  { id:"h2", kind:"hr", player:"Rafael Devers",      line:0.5, side:"over", odds:"+220", game:"SF @ COL",  start:"8:10p" },
+  { id:"h3", kind:"hr", player:"Wilyer Abreu",       line:0.5, side:"over", odds:"+450", game:"BOS @ LAA", start:"9:38p" },
+  { id:"h4", kind:"hr", player:"Cal Raleigh",        line:0.5, side:"over", odds:"+275", game:"TOR @ SEA", start:"10:10p" },
+  { id:"h5", kind:"hr", player:"Freddie Freeman",    line:0.5, side:"over", odds:"+425", game:"SD @ LAD",  start:"10:10p" },
+  { id:"h6", kind:"hr", player:"Jordan Walker",      line:0.5, side:"over", odds:"+325", game:"STL @ CHC", start:"8:05p" },
+  { id:"s1", kind:"sb", player:"Kevin McGonigle",    line:0.5, side:"over", odds:"+500", game:"DET @ TEX", start:"4:05p" },
+  { id:"s2", kind:"sb", player:"Travis Bazzana",     line:0.5, side:"over", odds:"+325", game:"CWS @ CLE", start:"7:10p" },
+  { id:"s3", kind:"sb", player:"Cam Smith",          line:0.5, side:"over", odds:"+600", game:"TB @ HOU",  start:"7:10p" },
+  { id:"s4", kind:"sb", player:"Jake McCarthy",      line:0.5, side:"over", odds:"+300", game:"SF @ COL",  start:"8:10p" },
+  { id:"x1", kind:"hrr", player:"Trent Grisham",     line:1.5, side:"over", odds:null,   game:"MIN @ NYY", start:"1:35p" },
 ];
 const SLATE_DATE = "2026-07-04";           // blank = auto (today in US-Eastern). Lock a day with "YYYY-MM-DD".
 const REFRESH_MS = 30000;
@@ -273,6 +296,12 @@ const GAME_META = {
   "NYM @ ATL":{away:"New York Mets",home:"Atlanta Braves",sport:"mlb"},
   "BOS @ LAA":{away:"Boston Red Sox",home:"Los Angeles Angels",sport:"mlb"},
   "SD @ LAD":{away:"San Diego Padres",home:"Los Angeles Dodgers",sport:"mlb"},
+  "MIA @ ATH":{away:"Miami Marlins",home:"Athletics",sport:"mlb"},
+  "SF @ COL":{away:"San Francisco Giants",home:"Colorado Rockies",sport:"mlb"},
+  "TOR @ SEA":{away:"Toronto Blue Jays",home:"Seattle Mariners",sport:"mlb"},
+  "STL @ CHC":{away:"St. Louis Cardinals",home:"Chicago Cubs",sport:"mlb"},
+  "DET @ TEX":{away:"Detroit Tigers",home:"Texas Rangers",sport:"mlb"},
+  "CWS @ CLE":{away:"Chicago White Sox",home:"Cleveland Guardians",sport:"mlb"},
 };
 
 const STATUS = {
@@ -289,6 +318,8 @@ const sm = s => STATUS[s] || STATUS.no_game;
 /* prop label / display-name lookup, generic across sports */
 const KIND_META = {
   sb:{label:"SB", name:"stolen bases"},
+  hr:{label:"HR", name:"home runs"},
+  hrr:{label:"H+R+RBI", name:"hits+runs+RBIs"},
   fs:{label:"FS", name:"fantasy score"},
   pts:{label:"PTS", name:"points"},
   reb:{label:"REB", name:"rebounds"},
@@ -342,7 +373,7 @@ function computeStatus(kind,val,line,state,lateGame){
   if(state==="pregame")return "pregame";
   if(state==="final")return val>line?"cleared":"busted";
   if(val>line)return "cleared";
-  if(kind==="sb")return "on_track";
+  if(kind==="sb"||kind==="hr")return "on_track";
   return (lateGame && val<line)?"behind":"on_track";
 }
 
@@ -459,6 +490,10 @@ function applyFeedMLB(label,data){
     let val=0,detail;
     if(b.kind==="sb"){ val=c?c.sb:0;
       detail=c?(val+" SB"+(c.ab?(", "+c.hits+"-for-"+c.ab):", yet to bat")):"in lineup?"; }
+    else if(b.kind==="hr"){ val=c?c.hr:0;
+      detail=c?(val+" HR"+(c.ab?(", "+c.hits+"-for-"+c.ab):", yet to bat")):"in lineup?"; }
+    else if(b.kind==="hrr"){ val=c?(c.hits+c.r+c.rbi):0;
+      detail=c?(val+" (H+R+RBI): "+c.hits+"H, "+c.r+"R, "+c.rbi+"RBI"):"in lineup?"; }
     else{ val=c?c.fs:0;
       detail=c?("FS "+val+": "+c.hits+"H"+(c.bb?","+c.bb+"BB":"")+(c.hr?","+c.hr+"HR":"")+(c.sb?","+c.sb+"SB":"")):"in lineup?"; }
     const status=computeStatus(b.kind,val,b.line,games[label].state,(ls.currentInning||0)>=7);
@@ -759,6 +794,29 @@ function buildPropsSidebar(){
       '<span class="ps-detail" title="'+esc(l.detail||"")+'">'+esc(l.detail||"")+'</span></div></div>';
   }).join("");
 }
+function myBetRow(b){
+  const l=live[b.id]||{}; const st=sm(l.status);
+  const sideTxt=(b.side==="over"?"Over":"Under")+" "+b.line+" "+propName(b.kind)+(b.odds?(" \u00B7 "+b.odds):"");
+  const pct=b.line>0?Math.max(0,Math.min(100,Math.round(((l.current||0)/b.line)*100))):0;
+  const showBar=(l.status!=="pregame");
+  return '<div class="mybet-row"><div class="mybet-top">'+
+    '<div class="mybet-main"><div class="player">'+esc(b.player)+'</div>'+
+    '<div class="prop">'+esc(sideTxt)+'</div>'+
+    '<div class="mybet-game">'+esc(b.game)+' \u00B7 '+esc(fmtStart(b.start))+'</div></div>'+
+    '<div class="leg-right"><span class="chip" style="background:'+st.bg+';color:'+st.fg+'"><span class="dot" style="background:'+st.dot+'"></span>'+st.label+'</span>'+
+    '<span class="leg-detail">'+esc(l.detail||"awaiting update")+'</span></div></div>'+
+    (showBar?'<div class="mybet-bar"><div class="mybet-bar-fill" style="width:'+pct+'%;background:'+st.dot+'"></div></div>':'')+
+    '</div>';
+}
+function buildMyBets(){
+  const sorted=BETS.slice().sort((a,b)=>{
+    const ca=(live[a.id]||{}).status==="cleared"||(live[a.id]||{}).status==="busted"?1:0;
+    const cb=(live[b.id]||{}).status==="cleared"||(live[b.id]||{}).status==="busted"?1:0;
+    if(ca!==cb) return ca-cb;
+    return parseStart(a.start)-parseStart(b.start);
+  });
+  return sorted.map(myBetRow).join("");
+}
 function basesSVG(g){
   const b=(g&&g.bases)||{};
   const c=on=>on?"on":"";
@@ -804,6 +862,7 @@ function render(){
   document.getElementById("board").innerHTML=GAME_ORDER.map(gameCard).join("");
   updateExpandLabel();
   document.getElementById("propsSidebar").innerHTML=buildPropsSidebar();
+  document.getElementById("mybets").innerHTML=buildMyBets();
   const fe=document.getElementById("feed");
   const activeFeed=playFeed.filter(ev=>(ev.cats||["mine"]).some(c=>feedFilters[c]));
   const noFiltersOn=!feedFilters.mine&&!feedFilters.hr&&!feedFilters.sb;
@@ -912,6 +971,7 @@ document.getElementById("tabs").addEventListener("click",e=>{ const t=e.target.c
   activeTab=t.getAttribute("data-tab");
   document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("is-active",x.getAttribute("data-tab")===activeTab));
   document.getElementById("boardPane").style.display=activeTab==="board"?"block":"none";
+  document.getElementById("mybetsPane").style.display=activeTab==="mybets"?"block":"none";
   document.getElementById("feedPane").style.display=activeTab==="feed"?"block":"none";
 });
 render();
