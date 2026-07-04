@@ -96,6 +96,17 @@
   .feed-sort button{font-family:Inter,sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;border:0;background:none;color:var(--ink2);padding:6px 13px;border-radius:7px;transition:background .15s,color .15s}
   .feed-sort button:hover{color:var(--ink)}
   .feed-sort button.is-active{background:var(--accent);color:#fff}
+  .feed-filter{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+  .feed-filter button{display:inline-flex;align-items:center;gap:6px;font-family:Inter,sans-serif;font-size:12.5px;font-weight:600;
+    cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink3);padding:6px 13px;border-radius:999px;
+    transition:background .15s,border-color .15s,color .15s}
+  .feed-filter button .fdot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.35;transition:opacity .15s}
+  .feed-filter button.is-active{color:var(--ink);border-color:#DADEE3;background:var(--raised)}
+  .feed-filter button.is-active .fdot{opacity:1}
+  .feed-filter button[data-filter="mine"].is-active{color:#1D4ED8;border-color:#C7D6FB;background:#E9F0FE}
+  .feed-filter button[data-filter="hr"].is-active{color:#15784A;border-color:#BFE3CE;background:#E6F4EC}
+  .feed-filter button[data-filter="sb"].is-active{color:#946410;border-color:#EED9A0;background:#FBF1DB}
+  .feed-badge-tag{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
   .feed-layout{display:flex;gap:0;align-items:flex-start}
   .col-resizer{width:14px;flex-shrink:0;cursor:col-resize;position:relative;align-self:stretch;touch-action:none}
   .col-resizer::after{content:"";position:absolute;top:8px;bottom:8px;left:6px;width:2px;background:var(--line);border-radius:2px;transition:background .15s}
@@ -197,6 +208,11 @@
     <div id="board" class="board"></div>
   </div>
   <div id="feedPane" style="display:none">
+    <div class="feed-filter" id="feedFilter">
+      <button data-filter="mine" class="is-active"><span class="fdot"></span>My Plays</button>
+      <button data-filter="hr" class="is-active"><span class="fdot"></span>Home Runs</button>
+      <button data-filter="sb" class="is-active"><span class="fdot"></span>Stolen Bases</button>
+    </div>
     <div class="feed-sort" id="feedSort">
       <button data-sort="game" class="is-active">By game</button>
       <button data-sort="recent">Most recent</button>
@@ -305,6 +321,8 @@ let live = Object.assign({}, INITIAL_LIVE);
 let prevStatus = Object.fromEntries(Object.entries(INITIAL_LIVE).map(([k,v])=>[k,v.status]));
 let games = Object.fromEntries(GAME_ORDER.map(g=>[g,{state:"pregame",sport:gameSport(g)}]));
 let openGames={}, userSet={}, playFeed=[], lastUpdated=null, autoOn=true, activeTab="board", feedSort="game";
+let extraGames={}; // scoreboard state for league-wide (non-bet) games that only contribute HR/SB feed items
+let feedFilters={mine:true, hr:true, sb:true};
 let timer=null, ticker=null, nextAt=0, busy=false;
 
 /* helpers */
@@ -382,18 +400,24 @@ function buildPlayFeed(label,ld,pmap){
   plays.forEach(pl=>{
     const ab=pl.about||{}, res=pl.result||{}, mu=pl.matchup||{}; const inn=inningLabel(ab);
     const bn=mu.batter&&mu.batter.fullName;
-    if(bn && mine[norm(bn)] && res.event && ab.isComplete){
-      const bet=mine[norm(bn)]; let ev=res.event; if(res.rbi) ev+=" ("+res.rbi+" RBI)";
-      playFeed.push({ts:ab.endTime||("idx"+String(ab.atBatIndex).padStart(5,"0")),key:label+"|ab"+ab.atBatIndex,
-        game:label,betId:bet.id,when:ab.endTime||null,
-        player:bn,event:ev,ctx:inn,line:statLine(pmap,bn,bet.kind),dot:eventDot(res.event)});
+    if(bn && res.event && ab.isComplete){
+      const bet=mine[norm(bn)]; const isHR=/home run/i.test(res.event);
+      if(bet||isHR){
+        let ev=res.event; if(res.rbi) ev+=" ("+res.rbi+" RBI)";
+        const cats=[]; if(bet)cats.push("mine"); if(isHR)cats.push("hr");
+        playFeed.push({ts:ab.endTime||("idx"+String(ab.atBatIndex).padStart(5,"0")),key:label+"|ab"+ab.atBatIndex,
+          game:label,betId:bet?bet.id:null,when:ab.endTime||null,cats:cats,
+          player:bn,event:ev,ctx:inn,line:bet?statLine(pmap,bn,bet.kind):"",dot:eventDot(res.event)});
+      }
     }
     (pl.runners||[]).forEach(rn=>{ const d=rn.details||{}; const rnm=d.runner&&d.runner.fullName; const rev=d.event||"";
-      if(rnm && mine[norm(rnm)] && /stolen base|caught stealing/i.test(rev)){
-        const bet=mine[norm(rnm)];
+      if(!rnm) return;
+      const bet=mine[norm(rnm)]; const isSB=/stolen base/i.test(rev); const isCS=/caught stealing/i.test(rev);
+      if(bet && (isSB||isCS) || (!bet && isSB)){
+        const cats=[]; if(bet)cats.push("mine"); if(isSB)cats.push("sb");
         playFeed.push({ts:(ab.endTime||("idx"+String(ab.atBatIndex).padStart(5,"0")))+"r",key:label+"|r"+ab.atBatIndex+rev,
-          game:label,betId:bet.id,when:ab.endTime||null,
-          player:rnm,event:rev,ctx:inn,line:statLine(pmap,rnm,bet.kind),dot:eventDot(rev)});
+          game:label,betId:bet?bet.id:null,when:ab.endTime||null,cats:cats,
+          player:rnm,event:rev,ctx:inn,line:bet?statLine(pmap,rnm,bet.kind):"",dot:eventDot(rev)});
       }
     });
   });
@@ -404,11 +428,17 @@ function buildPlayFeed(label,ld,pmap){
       const bet=mine[norm(bn)], cnt=cur.count||{}, inn=inningLabel(cur.about);
       const parts=[inn]; if(cnt.balls!=null&&cnt.strikes!=null)parts.push(cnt.balls+"-"+cnt.strikes);
       if(cnt.outs!=null)parts.push(cnt.outs+(cnt.outs===1?" out":" outs"));
-      playFeed.push({ts:"~live~"+label,key:label+"|current",live:true,
+      playFeed.push({ts:"~live~"+label,key:label+"|current",live:true,cats:["mine"],
         game:label,betId:bet.id,when:null,
         player:bn,event:"At bat",ctx:parts.filter(Boolean).join(" \u00B7 "),line:statLine(pmap,bn,bet.kind),dot:"#2563EB"});
     }
   }
+}
+function buildPmap(ld){
+  const pmap={};
+  ["away","home"].forEach(side=>{ const pl=(ld.boxscore&&ld.boxscore.teams&&ld.boxscore.teams[side]&&ld.boxscore.teams[side].players)||{};
+    Object.keys(pl).forEach(k=>{ const p=pl[k]; const nm=norm(p.person&&p.person.fullName); if(nm) pmap[nm]=(p.stats&&p.stats.batting)||{}; }); });
+  return pmap;
 }
 function applyFeedMLB(label,data){
   const gd=data.gameData||{}, ld=data.liveData||{}, ls=ld.linescore||{};
@@ -423,9 +453,7 @@ function applyFeedMLB(label,data){
     bases:{first:!!off.first,second:!!off.second,third:!!off.third},
     batter: !finalState && off.batter ? off.batter.fullName : null,
     pitcher: !finalState && def.pitcher ? def.pitcher.fullName : null };
-  const pmap={};
-  ["away","home"].forEach(side=>{ const pl=(ld.boxscore&&ld.boxscore.teams&&ld.boxscore.teams[side]&&ld.boxscore.teams[side].players)||{};
-    Object.keys(pl).forEach(k=>{ const p=pl[k]; const nm=norm(p.person&&p.person.fullName); if(nm) pmap[nm]=(p.stats&&p.stats.batting)||{}; }); });
+  const pmap=buildPmap(ld);
   BETS.filter(b=>b.game===label).forEach(b=>{
     const key=findPlayer(pmap,b.player); const c=key?batting(pmap[key]):null;
     let val=0,detail;
@@ -624,19 +652,36 @@ async function refresh(){
   if(busy) return; busy=true;
   if(!lastUpdated) setBanner("loading"); document.getElementById("refreshBtn").disabled=true;
   try{
-    let matched=0; playFeed=[];
+    let matched=0; playFeed=[]; extraGames={};
     const bySport={mlb:[],nfl:[],nba:[]};
     GAME_ORDER.forEach(label=>{ const sp=gameSport(label); (bySport[sp]=bySport[sp]||[]).push(label); });
 
-    if(bySport.mlb.length){
+    {
       const sched=await loadMLBSchedule(EFFECTIVE_DATE);
+      const seenPks=new Set();
       for(const label of bySport.mlb){
-        const sg=matchMLBGame(sched,GAME_META[label]); if(!sg) continue; matched++;
+        const sg=matchMLBGame(sched,GAME_META[label]); if(!sg) continue; matched++; seenPks.add(sg.gamePk);
         const st=sg.status&&sg.status.abstractGameState;
         if(st==="Preview"){ games[label]={state:"pregame",sport:"mlb"}; continue; }
         try{ const data=await fetchJSON(MLB_FEED_URL(sg.gamePk)); applyFeedMLB(label,data); render(); }
         catch(_){ /* skip this game this cycle */ }
       }
+      // league-wide sweep: every other MLB game today, just for HR / SB feed items (your board only shows legs for games above)
+      for(const sg of sched){
+        if(seenPks.has(sg.gamePk)) continue;
+        const st=sg.status&&sg.status.abstractGameState; if(st==="Preview") continue;
+        try{
+          const data=await fetchJSON(MLB_FEED_URL(sg.gamePk));
+          const label=(sg.teams.away.team.name)+" @ "+(sg.teams.home.team.name);
+          const ld=data.liveData||{}, ls=ld.linescore||{};
+          const finalState=(data.gameData&&data.gameData.status&&data.gameData.status.abstractGameState)==="Final";
+          extraGames[label]={state:finalState?"final":"live",sport:"mlb",
+            awayScore:(ls.teams&&ls.teams.away&&ls.teams.away.runs)||0,
+            homeScore:(ls.teams&&ls.teams.home&&ls.teams.home.runs)||0};
+          buildPlayFeed(label,ld,buildPmap(ld));
+        }catch(_){ /* skip this game this cycle */ }
+      }
+      render();
     }
     for(const sport of ["nfl","nba"]){
       if(!bySport[sport].length) continue;
@@ -725,7 +770,7 @@ function basesSVG(g){
     '</svg>';
 }
 function gameBar(game){
-  const gs=games[game]||{state:"pregame"}; const legs=BETS.filter(b=>b.game===game);
+  const gs=games[game]||extraGames[game]||{state:"pregame"}; const legs=BETS.filter(b=>b.game===game);
   if(gs.state==="live"){
     const parts=[]; if(gs.inning) parts.push(esc(gs.inning));
     if(gs.balls!=null&&gs.strikes!=null) parts.push(gs.balls+"-"+gs.strikes);
@@ -760,13 +805,19 @@ function render(){
   updateExpandLabel();
   document.getElementById("propsSidebar").innerHTML=buildPropsSidebar();
   const fe=document.getElementById("feed");
-  if(playFeed.length){
+  const activeFeed=playFeed.filter(ev=>(ev.cats||["mine"]).some(c=>feedFilters[c]));
+  const noFiltersOn=!feedFilters.mine&&!feedFilters.hr&&!feedFilters.sb;
+  if(noFiltersOn){
+    fe.innerHTML='<div class="feed-empty">No filters selected \u2014 turn on My Plays, Home Runs, or Stolen Bases above to see the feed.</div>';
+  }else if(activeFeed.length){
     if(feedSort==="recent"){
-      fe.innerHTML='<div class="feed-flat">'+playFeed.map(ev=>feedItemHTML(ev,true)).join("")+'</div>';
+      fe.innerHTML='<div class="feed-flat">'+activeFeed.map(ev=>feedItemHTML(ev,true)).join("")+'</div>';
     }else{
-      const grouped={}; playFeed.forEach(ev=>{ (grouped[ev.game]=grouped[ev.game]||[]).push(ev); });
-      fe.innerHTML=GAME_ORDER.filter(g=>grouped[g]&&grouped[g].length).map(g=>{
-        const bar=gameBar(g); const gp=games[g]||{}; const isMLB=(gp.sport||gameSport(g))==="mlb"; const parts=g.split(" @ ");
+      const grouped={}; activeFeed.forEach(ev=>{ (grouped[ev.game]=grouped[ev.game]||[]).push(ev); });
+      const orderedGames=GAME_ORDER.filter(g=>grouped[g]&&grouped[g].length)
+        .concat(Object.keys(grouped).filter(g=>!GAME_ORDER.includes(g)&&grouped[g].length));
+      fe.innerHTML=orderedGames.map(g=>{
+        const bar=gameBar(g); const gp=games[g]||extraGames[g]||{}; const isMLB=(gp.sport||gameSport(g))==="mlb"; const parts=g.split(" @ ");
         const head='<div class="feed-group-head">'+
           '<span class="teams">'+(bar.live?'<span class="live-tag"><span class="ld pulse"></span>LIVE</span>':'')+esc(parts[0]||g)+'<span class="at">@</span>'+esc(parts[1]||"")+'</span>'+
           (bar.score!=null?'<span class="fg-score">'+bar.score+'</span>':'')+
@@ -776,13 +827,21 @@ function render(){
       }).join("");
     }
   }else{
-    fe.innerHTML='<div class="feed-empty">Plays from your players show up here once their games are live. MLB shows every batted-ball event; NFL/NBA show scoring plays (TDs, FGs, made shots) involving your players.</div>';
+    fe.innerHTML='<div class="feed-empty">Nothing matching your filters yet. MLB shows every batted-ball event for your players, plus every home run and stolen base league-wide once games are live.</div>';
   }
 }
 function feedItemHTML(ev,showGameTag){
   const badge=ev.live?{label:"LIVE",fg:"#1D4ED8",bg:"#E9F0FE"}:(ev.badgeOverride||eventBadge(ev.event));
-  const st=sm((live[ev.betId]||{}).status);
-  const chip='<span class="chip" style="background:'+st.bg+';color:'+st.fg+';padding:2px 8px;font-size:11px"><span class="dot" style="background:'+st.dot+'"></span>'+st.label+'</span>';
+  const hasBet=ev.betId!=null;
+  let chip;
+  if(hasBet){
+    const st=sm((live[ev.betId]||{}).status);
+    chip='<span class="chip" style="background:'+st.bg+';color:'+st.fg+';padding:2px 8px;font-size:11px"><span class="dot" style="background:'+st.dot+'"></span>'+st.label+'</span>';
+  }else if(ev.cats&&ev.cats.includes("hr")){
+    chip='<span class="feed-badge-tag" style="background:#E6F4EC;color:#15784A">HR</span>';
+  }else if(ev.cats&&ev.cats.includes("sb")){
+    chip='<span class="feed-badge-tag" style="background:#FBF1DB;color:#946410">SB</span>';
+  }else{ chip=''; }
   const time=relTime(ev.when);
   const tag=showGameTag?'<div class="feed-game-tag">'+esc(ev.game||"")+'</div>':'';
   return '<div class="feed-item"><span class="feed-badge'+(ev.live?" pulse":"")+'" style="background:'+badge.bg+';color:'+badge.fg+'">'+esc(badge.label)+'</span>'+
@@ -840,6 +899,10 @@ function toggleCol(elId,btnId){
 }
 document.getElementById("feedColToggle").addEventListener("click",()=>toggleCol("feedMain","feedColToggle"));
 document.getElementById("propsColToggle").addEventListener("click",()=>toggleCol("propsSidebarWrap","propsColToggle"));
+document.getElementById("feedFilter").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return;
+  const f=b.getAttribute("data-filter"); feedFilters[f]=!feedFilters[f];
+  b.classList.toggle("is-active",feedFilters[f]); render();
+});
 document.getElementById("feedSort").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return;
   feedSort=b.getAttribute("data-sort");
   document.querySelectorAll("#feedSort button").forEach(x=>x.classList.toggle("is-active",x===b));
@@ -855,5 +918,4 @@ render();
 refresh();
 </script>
 </body>
-</html>
 </html>
