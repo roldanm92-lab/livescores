@@ -243,7 +243,7 @@ const BETS = [
   { id:"f5", kind:"fs", player:"Willson Contreras",  line:4.5, side:"over", odds:null, game:"BOS @ LAA", start:"9:38p" },
   { id:"f6", kind:"fs", player:"Freddie Freeman",    line:5.5, side:"over", odds:null, game:"SD @ LAD",  start:"10:10p" },
 ];
-const SLATE_DATE = "";           // blank = auto (today in US-Eastern). Lock a day with "YYYY-MM-DD".
+const SLATE_DATE = "2026-07-04";           // blank = auto (today in US-Eastern). Lock a day with "YYYY-MM-DD".
 const REFRESH_MS = 30000;
 function todayET(){ try{ return new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"}); }catch(_){ return new Date().toISOString().slice(0,10); } }
 const EFFECTIVE_DATE = (SLATE_DATE && /^\d{4}-\d{2}-\d{2}$/.test(SLATE_DATE)) ? SLATE_DATE : todayET();
@@ -855,4 +855,5 @@ render();
 refresh();
 </script>
 </body>
+</html>
 </html>
