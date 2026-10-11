@@ -108,6 +108,24 @@
   .feed-filter button[data-filter="mine"].is-active{color:#1D4ED8;border-color:#C7D6FB;background:#E9F0FE}
   .feed-filter button[data-filter="hr"].is-active{color:#15784A;border-color:#BFE3CE;background:#E6F4EC}
   .feed-filter button[data-filter="sb"].is-active{color:#946410;border-color:#EED9A0;background:#FBF1DB}
+  .feed-filter button[data-filter="allnfl"].is-active{color:#5A52E0;border-color:#D4D1F7;background:#EEEDFC}
+  .ag-wrap{margin-bottom:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .ag-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;background:var(--raised);border-bottom:1px solid var(--line2)}
+  .ag-title{font-family:Archivo,sans-serif;font-weight:700;font-size:14px}
+  .ag-count{font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums}
+  .ag-body{padding:0 14px}
+  .ag-item{padding:11px 0;border-bottom:1px solid var(--line2)}
+  .ag-item:last-child{border-bottom:0}
+  .ag-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .ag-score{font-family:Archivo,sans-serif;font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+  .ag-score .pos{color:var(--accent)}
+  .ag-clock{font-size:12px;font-weight:600;color:#D03A52;font-variant-numeric:tabular-nums}
+  .ag-dd{font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .ag-rz{font-size:10.5px;font-weight:700;color:#B42D45;background:#FBE8EC;padding:1px 6px;border-radius:5px}
+  .ag-play{display:flex;gap:10px;align-items:flex-start;margin-top:6px}
+  .ag-text{font-size:13px;color:var(--ink);line-height:1.4}
+  .ag-mine{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:700;color:#1D4ED8;background:#E9F0FE;padding:1px 6px;border-radius:5px;vertical-align:1px}
+  .ag-empty{padding:16px 0;font-size:13px;color:var(--ink3);text-align:center}
   .feed-badge-tag{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
   .mybets{margin-top:14px;display:flex;flex-direction:column;gap:10px}
   .section-label{font-family:Archivo,sans-serif;font-weight:700;font-size:11px;color:var(--ink3);
@@ -285,6 +303,7 @@
   <div id="feedPane" style="display:none">
     <div class="feed-filter" id="feedFilter">
       <button data-filter="mine" class="is-active"><span class="fdot"></span>My Plays</button>
+      <button data-filter="allnfl"><span class="fdot"></span>All Games</button>
       <button data-filter="hr" class="is-active"><span class="fdot"></span>Home Runs</button>
       <button data-filter="sb" class="is-active"><span class="fdot"></span>Stolen Bases</button>
     </div>
@@ -445,7 +464,7 @@ let prevStatus = Object.fromEntries(Object.entries(INITIAL_LIVE).map(([k,v])=>[k
 let games = Object.fromEntries(GAME_ORDER.map(g=>[g,{state:"pregame",sport:gameSport(g)}]));
 let openGames={}, userSet={}, playFeed=[], lastUpdated=null, autoOn=true, activeTab="board", feedSort="game";
 let extraGames={};
-let feedFilters={mine:true, hr:HAS_MLB, sb:HAS_MLB};
+let feedFilters={mine:true, allnfl:false, hr:HAS_MLB, sb:HAS_MLB};
 let timer=null, ticker=null, nextAt=0, busy=false;
 
 /* helpers */
@@ -855,6 +874,60 @@ function buildScoringFeedESPN(label,sport,sum,boxPlayers){
   });
 }
 
+/* ===== ALL GAMES live feed — every NFL game in progress + its most recent play.
+   One request to ESPN's current-week scoreboard (it carries situation.lastPlay), only while the toggle is on. */
+let allNFL={games:[],next:null,loaded:false,at:null};
+async function refreshAllGames(){
+  if(!feedFilters.allnfl) return;
+  try{
+    const j=await fetchJSON("https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard");
+    const evs=j.events||[]; const out=[]; let next=null;
+    evs.forEach(ev=>{
+      const comp=(ev.competitions&&ev.competitions[0])||{}; const st=ev.status||{}; const type=st.type||{};
+      if(type.state==="pre"){ const t=new Date(ev.date).getTime(); if(!isNaN(t)&&(!next||t<next.t)) next={t,name:ev.shortName||ev.name}; return; }
+      if(type.state!=="in") return;
+      const cs=comp.competitors||[]; const home=cs.find(c=>c.homeAway==="home")||{}, away=cs.find(c=>c.homeAway==="away")||{};
+      const sit=comp.situation||{}; const lp=sit.lastPlay||{};
+      const posId=String(sit.possession||"");
+      out.push({ id:ev.id, start:ev.date,
+        away:(away.team&&away.team.abbreviation)||"", home:(home.team&&home.team.abbreviation)||"",
+        awayId:String((away.team&&away.team.id)||""), homeId:String((home.team&&home.team.id)||""),
+        aScore:away.score||"0", hScore:home.score||"0", pos:posId,
+        clock:type.shortDetail||("Q"+st.period+" "+(st.displayClock||"")),
+        dd:sit.downDistanceText||sit.shortDownDistanceText||"", rz:!!sit.isRedZone,
+        text:lp.text||"", ptype:lp.type||null });
+    });
+    out.sort((a,b)=>a.start<b.start?-1:(a.start>b.start?1:(a.away<b.away?-1:1)));
+    allNFL={games:out,next,loaded:true,at:new Date()};
+  }catch(_){ allNFL.loaded=true; }
+  render();
+}
+let MY_NAME_RES=null;
+function mentionsMine(text){
+  if(!MY_NAME_RES) MY_NAME_RES=[...new Set(BETS.map(b=>b.player))].map(abbrRegex).filter(Boolean);
+  return MY_NAME_RES.some(re=>re.test(text));
+}
+function buildAllGamesHTML(){
+  const head=t=>'<div class="ag-wrap"><div class="ag-head"><span class="ag-title">All live NFL games</span><span class="ag-count">'+t+'</span></div><div class="ag-body">';
+  if(!allNFL.loaded) return head("loading…")+'<div class="ag-empty"><span class="spin">↻</span> Pulling every live game…</div></div></div>';
+  if(!allNFL.games.length){
+    let msg="No NFL games live right now.";
+    if(allNFL.next){ try{ msg+=" Next: "+esc(allNFL.next.name)+", "+new Date(allNFL.next.t).toLocaleString("en-US",{weekday:"short",hour:"numeric",minute:"2-digit",timeZone:"America/New_York"})+" ET."; }catch(_){} }
+    return head("0 live")+'<div class="ag-empty">'+msg+'</div></div></div>';
+  }
+  const items=allNFL.games.map(g=>{
+    const aPos=g.pos&&g.pos===g.awayId, hPos=g.pos&&g.pos===g.homeId;
+    const score='<span class="ag-score">'+(aPos?'<span class="pos">▸</span>':'')+esc(g.away)+' '+esc(g.aScore)+' <span style="color:var(--ink3)">@</span> '+esc(g.home)+' '+esc(g.hScore)+(hPos?'<span class="pos">◂</span>':'')+'</span>';
+    const badge=g.text?nflPlayBadge({type:g.ptype,text:g.text},false):{label:"•",fg:"#586069",bg:"#EFF1F4"};
+    const mine=g.text&&mentionsMine(g.text);
+    return '<div class="ag-item"><div class="ag-top">'+score+'<span class="ag-clock">'+esc(g.clock)+'</span>'+
+      (g.dd?'<span class="ag-dd">'+esc(g.dd)+'</span>':'')+(g.rz?'<span class="ag-rz">RED ZONE</span>':'')+'</div>'+
+      '<div class="ag-play"><span class="feed-badge" style="background:'+badge.bg+';color:'+badge.fg+'">'+esc(badge.label)+'</span>'+
+      '<span class="ag-text">'+(g.text?esc(cleanPlayText(g.text)):'<span style="color:var(--ink3)">Waiting for the first play…</span>')+(mine?'<span class="ag-mine">YOUR PLAYER</span>':'')+'</span></div></div>';
+  }).join("");
+  return head(allNFL.games.length+" live")+items+'</div></div>';
+}
+
 /* ===== SLEEPER FANTASY (free public API, api.sleeper.app — no key, no Claude usage) =====
    SLEEPER_USERNAME bakes in a default; anyone viewing can set their own in the Fantasy tab (saved in this browser). */
 const SLEEPER_USERNAME = "mikerold92";
@@ -1080,7 +1153,7 @@ async function refresh(){
     lastUpdated=new Date(); setBanner(matched===0?"nodate":null); render(); scheduleNext();
   }catch(err){
     autoOn=false; stopTimers(); setBanner("offline"); render();
-  }finally{ busy=false; document.getElementById("refreshBtn").disabled=false; if(sleeperName) refreshFantasy(); }
+  }finally{ busy=false; document.getElementById("refreshBtn").disabled=false; if(sleeperName) refreshFantasy(); if(feedFilters.allnfl) refreshAllGames(); }
 }
 function scheduleNext(){ stopTimers(); if(!autoOn) return; nextAt=Date.now()+REFRESH_MS; timer=setTimeout(refresh,REFRESH_MS); ticker=setInterval(tickCountdown,1000); tickCountdown(); }
 function stopTimers(){ clearTimeout(timer); clearInterval(ticker); }
@@ -1245,17 +1318,21 @@ function render(){
   document.getElementById("mybets").innerHTML=buildMyBets();
   const fe=document.getElementById("feed");
   const activeFeed=playFeed.filter(ev=>(ev.cats||["mine"]).some(c=>feedFilters[c]));
-  const noFiltersOn=!feedFilters.mine&&!feedFilters.hr&&!feedFilters.sb;
-  if(noFiltersOn){
-    fe.innerHTML='<div class="feed-empty">No filters selected — turn on My Plays above to see the feed.</div>';
+  const noFiltersOn=!feedFilters.mine&&!feedFilters.allnfl&&!feedFilters.hr&&!feedFilters.sb;
+  const agHTML=feedFilters.allnfl?buildAllGamesHTML():"";
+  const onlyAll=feedFilters.allnfl&&!feedFilters.mine&&!feedFilters.hr&&!feedFilters.sb;
+  if(onlyAll){
+    fe.innerHTML=agHTML;
+  }else if(noFiltersOn){
+    fe.innerHTML='<div class="feed-empty">No filters selected — turn on My Plays or All Games above to see the feed.</div>';
   }else if(activeFeed.length){
     if(feedSort==="recent"){
-      fe.innerHTML='<div class="feed-flat">'+activeFeed.map(ev=>feedItemHTML(ev,true)).join("")+'</div>';
+      fe.innerHTML=agHTML+'<div class="feed-flat">'+activeFeed.map(ev=>feedItemHTML(ev,true)).join("")+'</div>';
     }else{
       const grouped={}; activeFeed.forEach(ev=>{ (grouped[ev.game]=grouped[ev.game]||[]).push(ev); });
       const orderedGames=GAME_ORDER.filter(g=>grouped[g]&&grouped[g].length)
         .concat(Object.keys(grouped).filter(g=>!GAME_ORDER.includes(g)&&grouped[g].length));
-      fe.innerHTML=orderedGames.map(g=>{
+      fe.innerHTML=agHTML+orderedGames.map(g=>{
         const bar=gameBar(g); const gp=games[g]||extraGames[g]||{}; const isMLB=(gp.sport||gameSport(g))==="mlb"; const parts=g.split(" @ ");
         const head='<div class="feed-group-head">'+
           '<span class="teams">'+(bar.live?'<span class="live-tag"><span class="ld pulse"></span>LIVE</span>':'')+esc(parts[0]||g)+'<span class="at">@</span>'+esc(parts[1]||"")+'</span>'+
@@ -1265,7 +1342,7 @@ function render(){
       }).join("");
     }
   }else{
-    fe.innerHTML='<div class="feed-empty">Nothing yet. Every play involving your players shows up here once their games are live.</div>';
+    fe.innerHTML=agHTML+'<div class="feed-empty">Nothing yet. Every play involving your players shows up here once their games are live.</div>';
   }
 }
 function feedItemHTML(ev,showGameTag){
@@ -1333,6 +1410,7 @@ document.getElementById("propsColToggle").addEventListener("click",()=>toggleCol
 document.getElementById("feedFilter").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return;
   const f=b.getAttribute("data-filter"); feedFilters[f]=!feedFilters[f];
   b.classList.toggle("is-active",feedFilters[f]); render();
+  if(f==="allnfl"&&feedFilters.allnfl) refreshAllGames();
 });
 document.getElementById("feedSort").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return;
   feedSort=b.getAttribute("data-sort");
