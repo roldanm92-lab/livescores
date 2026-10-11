@@ -190,6 +190,50 @@
   body.hdr-collapsed .caption{font-size:11px}
   body.hdr-collapsed .tabs{margin-top:8px;padding:2px}
   body.hdr-collapsed .tab{padding:5px 12px;font-size:12px}
+  .fantasy{margin-top:14px;display:flex;flex-direction:column;gap:12px}
+  .fx-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2)}
+  .fx-bar b{color:var(--ink);font-weight:600}
+  .fx-link{background:none;border:0;padding:0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer}
+  .fx-setup{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 16px}
+  .fx-setup h3{margin:0 0 4px;font-family:Archivo,sans-serif;font-size:16px}
+  .fx-setup p{margin:0 0 12px;font-size:13px;color:var(--ink2)}
+  .fx-form{display:flex;gap:8px}
+  .fx-form input{flex:1;min-width:0;font:inherit;font-size:15px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--raised);color:var(--ink)}
+  .fx-form input:focus{outline:2px solid var(--accent);outline-offset:-1px}
+  .fx-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(20,24,28,.03);overflow:hidden}
+  .fx-head{padding:13px 16px 12px;border-bottom:1px solid var(--line2)}
+  .fx-league{font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;font-family:Archivo,sans-serif}
+  .fx-score{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:10px;margin-top:8px}
+  .fx-team{min-width:0}
+  .fx-team.r{text-align:right}
+  .fx-tname{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fx-rec{font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums}
+  .fx-pts{font-family:Archivo,sans-serif;font-weight:800;font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .fx-pts.lead{color:#15784A}
+  .fx-vs{font-size:11px;color:var(--ink3);font-weight:600;padding-bottom:8px}
+  .fx-meter{margin-top:10px;height:5px;border-radius:999px;background:#F2CAD2;overflow:hidden}
+  .fx-meter div{height:100%;background:#1E9E5A;border-radius:999px;transition:width .3s}
+  .fx-meta{margin-top:7px;display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .fx-rows{padding:2px 12px 8px}
+  .fx-row{display:grid;grid-template-columns:1fr 34px 1fr;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid var(--line2)}
+  .fx-row:last-child{border-bottom:0}
+  .fx-slot{font-size:10px;font-weight:700;color:var(--ink3);text-align:center;letter-spacing:.03em}
+  .fx-p{display:flex;align-items:center;gap:8px;min-width:0}
+  .fx-p.r{flex-direction:row-reverse;text-align:right}
+  .fx-pinfo{min-width:0;flex:1}
+  .fx-pname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fx-psub{font-size:11px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+  .fx-psub .lv{color:#D03A52;font-weight:600}
+  .fx-ppts{font-family:Archivo,sans-serif;font-weight:700;font-size:14.5px;font-variant-numeric:tabular-nums;flex-shrink:0;min-width:36px}
+  .fx-p.r .fx-ppts{text-align:left}
+  .fx-p:not(.r) .fx-ppts{text-align:right}
+  .fx-ppts.pre{color:var(--ink3);font-weight:600}
+  .fx-empty{color:var(--ink3);font-size:12.5px;font-style:italic}
+  .fx-bench{padding:9px 16px 12px;border-top:1px solid var(--line2);font-size:12px;color:var(--ink2)}
+  .fx-bench summary{cursor:pointer;font-weight:600;color:var(--ink2)}
+  .fx-bench-list{margin-top:6px;display:flex;flex-direction:column;gap:3px;font-variant-numeric:tabular-nums}
+  .fx-bench-list div{display:flex;justify-content:space-between;gap:10px}
+  @media (max-width:420px){ .fx-pts{font-size:24px} .fx-pname{font-size:12.5px} .fx-rows{padding:2px 8px 8px} }
   .foot{margin-top:30px;font-size:11.5px;color:var(--ink3);line-height:1.6;text-align:center}
   .tabs{display:inline-flex;gap:4px;margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:3px}
   .tab{font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:0;background:none;color:var(--ink2);padding:7px 16px;border-radius:8px;transition:background .15s,color .15s}
@@ -226,6 +270,7 @@
     <button class="tab is-active" data-tab="board">Board</button>
     <button class="tab" data-tab="mybets">My Bets</button>
     <button class="tab" data-tab="feed">Feed</button>
+    <button class="tab" data-tab="fantasy">Fantasy</button>
   </div>
   <div id="boardPane">
     <div id="summary"></div>
@@ -233,6 +278,9 @@
   </div>
   <div id="mybetsPane" style="display:none">
     <div id="mybets" class="mybets"></div>
+  </div>
+  <div id="fantasyPane" style="display:none">
+    <div id="fantasy" class="fantasy"></div>
   </div>
   <div id="feedPane" style="display:none">
     <div class="feed-filter" id="feedFilter">
@@ -807,6 +855,172 @@ function buildScoringFeedESPN(label,sport,sum,boxPlayers){
   });
 }
 
+/* ===== SLEEPER FANTASY (free public API, api.sleeper.app — no key, no Claude usage) =====
+   SLEEPER_USERNAME bakes in a default; anyone viewing can set their own in the Fantasy tab (saved in this browser). */
+const SLEEPER_USERNAME = "";
+const SLP = "https://api.sleeper.app/v1";
+const SLOT_LABEL = {QB:"QB",RB:"RB",WR:"WR",TE:"TE",K:"K",DEF:"DST",FLEX:"FLX",SUPER_FLEX:"SF",REC_FLEX:"W/T",WRRB_FLEX:"W/R",IDP_FLEX:"IDP",DL:"DL",LB:"LB",DB:"DB"};
+const NON_START = new Set(["BN","IR","TAXI"]);
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); return true; }catch(_){ return false; } }
+let sleeperName = lsGet("sleeperUser") || SLEEPER_USERNAME;
+let fant = { user:null, season:null, week:null, leagues:[], meta:{}, matchups:{}, players:null, teamState:{}, err:null, metaAt:0, loadedOnce:false, busy:false };
+
+async function loadSleeperPlayers(){
+  if(fant.players) return fant.players;
+  const key="slpPlayers_v1";
+  try{ const c=JSON.parse(lsGet(key)||"null"); if(c&&c.d===todayET()&&c.m){ fant.players=c.m; return c.m; } }catch(_){}
+  const all=await fetchJSON(SLP+"/players/nfl"); const m={};
+  const keep=new Set(["QB","RB","WR","TE","K","DEF","DL","LB","DB","FB"]);
+  for(const id in all){ const p=all[id]; if(!p||!keep.has(p.position)) continue;
+    const nm=p.full_name||((p.first_name||"")+" "+(p.last_name||"")).trim()||id;
+    m[id]=[nm,p.position||"",p.team||""]; }
+  lsSet(key,JSON.stringify({d:todayET(),m}));
+  fant.players=m; return m;
+}
+function slpPlayer(id){
+  const m=fant.players||{}; const p=m[id];
+  if(p) return {name:p[0],pos:p[1],team:p[2]};
+  if(/^[A-Z]{2,3}$/.test(String(id))) return {name:id+" D/ST",pos:"DEF",team:id};
+  return {name:"Player "+id,pos:"",team:""};
+}
+function espnAbbr(t){ return ({WAS:"WSH",JAC:"JAX"})[t]||t; }
+async function loadTeamStates(){
+  try{
+    const j=await fetchJSON("https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard");
+    const st={};
+    (j.events||[]).forEach(ev=>{
+      const comp=(ev.competitions&&ev.competitions[0])||{}; const type=(ev.status&&ev.status.type)||{};
+      const cs=comp.competitors||[];
+      let label;
+      if(type.state==="in") label=(ev.status.type.shortDetail||("Q"+ev.status.period+" "+(ev.status.displayClock||"")));
+      else if(type.state==="post") label="Final";
+      else { try{ label=new Date(ev.date).toLocaleString("en-US",{weekday:"short",hour:"numeric",minute:"2-digit",timeZone:"America/New_York"}); }catch(_){ label=""; } }
+      cs.forEach(c=>{ const ab=c.team&&c.team.abbreviation; if(!ab) return;
+        const opp=cs.find(x=>x!==c); st[ab]={state:type.state,label,opp:(opp&&opp.team&&opp.team.abbreviation)||"",home:c.homeAway==="home"}; });
+    });
+    fant.teamState=st;
+  }catch(_){}
+}
+async function loadFantasyMeta(){
+  const state=await fetchJSON(SLP+"/state/nfl");
+  fant.season=state.league_season||state.season; fant.week=state.display_week||state.week||1;
+  const user=await fetchJSON(SLP+"/user/"+encodeURIComponent(sleeperName));
+  if(!user||!user.user_id) throw new Error("nouser");
+  fant.user=user;
+  const leagues=await fetchJSON(SLP+"/user/"+user.user_id+"/leagues/nfl/"+fant.season);
+  fant.leagues=(leagues||[]).filter(l=>l.status!=="pre_draft"&&l.status!=="drafting");
+  const meta={};
+  await Promise.all(fant.leagues.map(async l=>{
+    try{
+      const [rosters,users]=await Promise.all([fetchJSON(SLP+"/league/"+l.league_id+"/rosters"),fetchJSON(SLP+"/league/"+l.league_id+"/users")]);
+      const mine=(rosters||[]).find(r=>r.owner_id===user.user_id||(r.co_owners||[]).includes(user.user_id));
+      const um={}; (users||[]).forEach(u=>um[u.user_id]=u);
+      meta[l.league_id]={rosters:rosters||[],users:um,myRosterId:mine?mine.roster_id:null};
+    }catch(_){}
+  }));
+  fant.meta=meta; fant.metaAt=Date.now();
+}
+async function refreshFantasy(){
+  if(!sleeperName||fant.busy) return; fant.busy=true;
+  try{
+    if(!fant.user||Date.now()-fant.metaAt>10*60*1000) await loadFantasyMeta();
+    await Promise.all([loadSleeperPlayers().catch(()=>{}), loadTeamStates()]);
+    const mu={};
+    await Promise.all(fant.leagues.map(async l=>{ try{ mu[l.league_id]=await fetchJSON(SLP+"/league/"+l.league_id+"/matchups/"+fant.week); }catch(_){} }));
+    fant.matchups=mu; fant.err=null; fant.loadedOnce=true; fant.updated=new Date();
+  }catch(e){
+    fant.err=(e&&e.message==="nouser")?"nouser":"net"; fant.loadedOnce=true;
+  }finally{ fant.busy=false; renderFantasy(); }
+}
+function rosterName(lid,rid){
+  const m=fant.meta[lid]; if(!m) return "Team "+rid; const r=m.rosters.find(x=>x.roster_id===rid); if(!r) return "Team "+rid;
+  const u=m.users[r.owner_id]; return (u&&u.metadata&&u.metadata.team_name)||(u&&u.display_name)||("Team "+rid);
+}
+function rosterRec(lid,rid){
+  const m=fant.meta[lid]; const r=m&&m.rosters.find(x=>x.roster_id===rid); const s=r&&r.settings; if(!s) return "";
+  return s.wins+"-"+s.losses+(s.ties?"-"+s.ties:"");
+}
+function fmtPts(n){ return (Math.round((+n||0)*100)/100).toFixed(2); }
+function playerCell(id,pts,right){
+  if(!id||id==="0") return '<div class="fx-p'+(right?" r":"")+'"><span class="fx-empty">Empty</span></div>';
+  const p=slpPlayer(id); const ts=fant.teamState[espnAbbr(p.team)];
+  let sub=p.pos+(p.team?" · "+p.team:""); let pre=false;
+  if(!p.team) sub+=" · FA";
+  else if(!ts) sub+=" · Bye";
+  else if(ts.state==="in") sub+=' · <span class="lv">'+esc(ts.label)+'</span>';
+  else if(ts.state==="post") sub+=" · Final";
+  else { sub+=" · "+esc(ts.label); pre=true; }
+  return '<div class="fx-p'+(right?" r":"")+'"><div class="fx-pinfo"><div class="fx-pname">'+esc(p.name)+'</div><div class="fx-psub">'+sub+'</div></div>'+
+    '<span class="fx-ppts'+(pre&&!(+pts)?" pre":"")+'">'+fmtPts(pts)+'</span></div>';
+}
+function yetToPlay(starters){
+  return (starters||[]).filter(id=>{ if(!id||id==="0") return false; const p=slpPlayer(id); const ts=fant.teamState[espnAbbr(p.team)]; return ts&&ts.state==="pre"; }).length;
+}
+function stillPlaying(starters){
+  return (starters||[]).filter(id=>{ if(!id||id==="0") return false; const p=slpPlayer(id); const ts=fant.teamState[espnAbbr(p.team)]; return ts&&ts.state==="in"; }).length;
+}
+function fantasyCard(l){
+  const m=fant.meta[l.league_id]; const list=fant.matchups[l.league_id];
+  if(!m||!m.myRosterId||!list) return '<div class="fx-card"><div class="fx-head"><div class="fx-league">'+esc(l.name)+'</div><div class="fx-meta"><span>No matchup found for week '+fant.week+'</span></div></div></div>';
+  const me=list.find(x=>x.roster_id===m.myRosterId);
+  if(!me) return '<div class="fx-card"><div class="fx-head"><div class="fx-league">'+esc(l.name)+'</div><div class="fx-meta"><span>No matchup this week</span></div></div></div>';
+  const opp=me.matchup_id!=null?list.find(x=>x.matchup_id===me.matchup_id&&x.roster_id!==me.roster_id):null;
+  const myPts=me.custom_points!=null?me.custom_points:(me.points||0);
+  const opPts=opp?(opp.custom_points!=null?opp.custom_points:(opp.points||0)):null;
+  const slots=(l.roster_positions||[]).filter(s=>!NON_START.has(s));
+  const n=Math.max(slots.length,(me.starters||[]).length,opp?(opp.starters||[]).length:0);
+  let rows="";
+  for(let i=0;i<n;i++){
+    const slot=SLOT_LABEL[slots[i]]||slots[i]||"";
+    rows+='<div class="fx-row">'+playerCell((me.starters||[])[i],(me.starters_points||[])[i],false)+
+      '<span class="fx-slot">'+esc(slot)+'</span>'+
+      (opp?playerCell((opp.starters||[])[i],(opp.starters_points||[])[i],true):'<div></div>')+'</div>';
+  }
+  const lead=opp?(myPts>opPts?"me":(opPts>myPts?"opp":"tie")):"me";
+  const pct=opp&&(myPts+opPts)>0?Math.round(myPts/(myPts+opPts)*100):50;
+  const startersSet=new Set(me.starters||[]);
+  const bench=(me.players||[]).filter(id=>!startersSet.has(id));
+  const pp=me.players_points||{};
+  const benchTot=bench.reduce((a,id)=>a+(+pp[id]||0),0);
+  const benchHTML=bench.length?'<details class="fx-bench"><summary>Bench · '+fmtPts(benchTot)+' pts</summary><div class="fx-bench-list">'+
+    bench.map(id=>{ const p=slpPlayer(id); return '<div><span>'+esc(p.name)+' <span style="color:var(--ink3)">'+esc(p.pos+(p.team?" "+p.team:""))+'</span></span><b>'+fmtPts(pp[id])+'</b></div>'; }).join("")+'</div></details>':'';
+  const myLeft=yetToPlay(me.starters), opLeft=opp?yetToPlay(opp.starters):0;
+  const myLive=stillPlaying(me.starters), opLive=opp?stillPlaying(opp.starters):0;
+  return '<div class="fx-card"><div class="fx-head"><div class="fx-league">'+esc(l.name)+' · Week '+fant.week+'</div>'+
+    '<div class="fx-score"><div class="fx-team"><div class="fx-tname">'+esc(rosterName(l.league_id,me.roster_id))+'</div><div class="fx-rec">'+esc(rosterRec(l.league_id,me.roster_id))+'</div>'+
+      '<div class="fx-pts'+(lead==="me"&&opp?" lead":"")+'">'+fmtPts(myPts)+'</div></div>'+
+    '<span class="fx-vs">vs</span>'+
+    (opp?'<div class="fx-team r"><div class="fx-tname">'+esc(rosterName(l.league_id,opp.roster_id))+'</div><div class="fx-rec">'+esc(rosterRec(l.league_id,opp.roster_id))+'</div>'+
+      '<div class="fx-pts'+(lead==="opp"?" lead":"")+'">'+fmtPts(opPts)+'</div></div>':'<div class="fx-team r"><div class="fx-rec">No opponent this week</div></div>')+'</div>'+
+    (opp?'<div class="fx-meter"><div style="width:'+pct+'%"></div></div>':'')+
+    '<div class="fx-meta"><span>'+myLive+' playing · '+myLeft+' yet to play</span>'+(opp?'<span>'+opLive+' playing · '+opLeft+' yet to play</span>':'')+'</div></div>'+
+    '<div class="fx-rows">'+rows+'</div>'+benchHTML+'</div>';
+}
+function renderFantasy(){
+  const el=document.getElementById("fantasy"); if(!el) return;
+  if(document.activeElement&&document.activeElement.id==="slpInput") return;
+  if(!sleeperName){
+    el.innerHTML='<div class="fx-setup"><h3>Track your Sleeper matchups</h3><p>Enter your Sleeper username. Every league you’re in shows up here with live scores, refreshing with the board.</p>'+
+      '<div class="fx-form"><input id="slpInput" placeholder="Sleeper username" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn btn-primary" id="slpSave">Save</button></div></div>';
+    return;
+  }
+  let bar='<div class="fx-bar"><span>Sleeper · <b>'+esc(sleeperName)+'</b>'+(fant.week?' · Week '+fant.week:'')+
+    (fant.updated?' · updated '+fant.updated.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):'')+'</span><button class="fx-link" id="slpChange">Change user</button></div>';
+  if(!fant.loadedOnce){ el.innerHTML=bar+'<div class="note note-load"><span class="spin">↻</span> Loading your leagues…</div>'; return; }
+  if(fant.err==="nouser"){ el.innerHTML=bar+'<div class="note note-warn"><strong>No Sleeper user “'+esc(sleeperName)+'”.</strong> Check the spelling and try again.</div>'; return; }
+  if(fant.err==="net"&&!fant.leagues.length){ el.innerHTML=bar+'<div class="note note-error"><strong>Sleeper didn’t load.</strong> It’ll retry on the next refresh.</div>'; return; }
+  if(!fant.leagues.length){ el.innerHTML=bar+'<div class="feed-empty">No '+(fant.season||"")+' NFL leagues found for this user.</div>'; return; }
+  el.innerHTML=bar+fant.leagues.map(fantasyCard).join("");
+}
+document.getElementById("fantasy").addEventListener("click",e=>{
+  if(e.target.closest("#slpSave")){ const v=(document.getElementById("slpInput").value||"").trim(); if(!v) return;
+    sleeperName=v; lsSet("sleeperUser",v); fant={...fant,user:null,leagues:[],meta:{},matchups:{},metaAt:0,loadedOnce:false,err:null};
+    document.activeElement&&document.activeElement.blur&&document.activeElement.blur(); renderFantasy(); refreshFantasy(); }
+  else if(e.target.closest("#slpChange")){ sleeperName=""; lsSet("sleeperUser",""); renderFantasy(); setTimeout(()=>{ const i=document.getElementById("slpInput"); if(i) i.focus(); },0); }
+});
+document.getElementById("fantasy").addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.id==="slpInput"){ e.target.blur(); document.getElementById("slpSave").click(); } });
+
 /* refresh — free public feeds only, no Claude usage. MLB is only polled when you have MLB legs. */
 async function refresh(){
   if(busy) return; busy=true;
@@ -866,7 +1080,7 @@ async function refresh(){
     lastUpdated=new Date(); setBanner(matched===0?"nodate":null); render(); scheduleNext();
   }catch(err){
     autoOn=false; stopTimers(); setBanner("offline"); render();
-  }finally{ busy=false; document.getElementById("refreshBtn").disabled=false; }
+  }finally{ busy=false; document.getElementById("refreshBtn").disabled=false; if(sleeperName) refreshFantasy(); }
 }
 function scheduleNext(){ stopTimers(); if(!autoOn) return; nextAt=Date.now()+REFRESH_MS; timer=setTimeout(refresh,REFRESH_MS); ticker=setInterval(tickCountdown,1000); tickCountdown(); }
 function stopTimers(){ clearTimeout(timer); clearInterval(ticker); }
@@ -1026,6 +1240,7 @@ function render(){
   document.getElementById("summary").innerHTML=buildSummary();
   document.getElementById("board").innerHTML=GAME_ORDER.map(gameCard).join("");
   updateExpandLabel();
+  renderFantasy();
   document.getElementById("propsSidebar").innerHTML=buildPropsSidebar();
   document.getElementById("mybets").innerHTML=buildMyBets();
   const fe=document.getElementById("feed");
@@ -1130,6 +1345,8 @@ document.getElementById("tabs").addEventListener("click",e=>{ const t=e.target.c
   document.getElementById("boardPane").style.display=activeTab==="board"?"block":"none";
   document.getElementById("mybetsPane").style.display=activeTab==="mybets"?"block":"none";
   document.getElementById("feedPane").style.display=activeTab==="feed"?"block":"none";
+  document.getElementById("fantasyPane").style.display=activeTab==="fantasy"?"block":"none";
+  if(activeTab==="fantasy" && sleeperName && !fant.loadedOnce) refreshFantasy();
 });
 render();
 refresh();
