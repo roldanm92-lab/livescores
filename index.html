@@ -877,6 +877,7 @@ function buildScoringFeedESPN(label,sport,sum,boxPlayers){
 /* ===== ALL GAMES live feed — every NFL game in progress + its most recent play.
    One request to ESPN's current-week scoreboard (it carries situation.lastPlay), only while the toggle is on. */
 let allNFL={games:[],next:null,loaded:false,at:null};
+let agSeen={}, agFirstLoad=true; // gameId -> {key, t}: when we first saw its current last play
 async function refreshAllGames(){
   if(!feedFilters.allnfl) return;
   try{
@@ -895,9 +896,14 @@ async function refreshAllGames(){
         aScore:away.score||"0", hScore:home.score||"0", pos:posId,
         clock:type.shortDetail||("Q"+st.period+" "+(st.displayClock||"")),
         dd:sit.downDistanceText||sit.shortDownDistanceText||"", rz:!!sit.isRedZone,
-        text:lp.text||"", ptype:lp.type||null });
+        text:lp.text||"", ptype:lp.type||null, pkey:String(lp.id||lp.text||"") });
     });
     out.sort((a,b)=>a.start<b.start?-1:(a.start>b.start?1:(a.away<b.away?-1:1)));
+    const now=Date.now();
+    out.forEach((g,i)=>{ const prev=agSeen[g.id];
+      if(!prev||prev.key!==g.pkey) agSeen[g.id]={key:g.pkey,t:(agFirstLoad||!g.pkey)?0:now};
+      g.seenAt=agSeen[g.id].t; g.order=i; });
+    agFirstLoad=false;
     allNFL={games:out,next,loaded:true,at:new Date()};
   }catch(_){ allNFL.loaded=true; }
   render();
@@ -915,17 +921,20 @@ function buildAllGamesHTML(){
     if(allNFL.next){ try{ msg+=" Next: "+esc(allNFL.next.name)+", "+new Date(allNFL.next.t).toLocaleString("en-US",{weekday:"short",hour:"numeric",minute:"2-digit",timeZone:"America/New_York"})+" ET."; }catch(_){} }
     return head("0 live")+'<div class="ag-empty">'+msg+'</div></div></div>';
   }
-  const items=allNFL.games.map(g=>{
+  const list=allNFL.games.slice();
+  if(feedSort==="recent") list.sort((a,b)=>(b.seenAt-a.seenAt)||(a.order-b.order));
+  const items=list.map(g=>{
     const aPos=g.pos&&g.pos===g.awayId, hPos=g.pos&&g.pos===g.homeId;
     const score='<span class="ag-score">'+(aPos?'<span class="pos">▸</span>':'')+esc(g.away)+' '+esc(g.aScore)+' <span style="color:var(--ink3)">@</span> '+esc(g.home)+' '+esc(g.hScore)+(hPos?'<span class="pos">◂</span>':'')+'</span>';
     const badge=g.text?nflPlayBadge({type:g.ptype,text:g.text},false):{label:"•",fg:"#586069",bg:"#EFF1F4"};
     const mine=g.text&&mentionsMine(g.text);
     return '<div class="ag-item"><div class="ag-top">'+score+'<span class="ag-clock">'+esc(g.clock)+'</span>'+
-      (g.dd?'<span class="ag-dd">'+esc(g.dd)+'</span>':'')+(g.rz?'<span class="ag-rz">RED ZONE</span>':'')+'</div>'+
+      (g.dd?'<span class="ag-dd">'+esc(g.dd)+'</span>':'')+(g.rz?'<span class="ag-rz">RED ZONE</span>':'')+
+      (g.seenAt?'<span class="feed-time" style="margin-left:auto">'+relTime(new Date(g.seenAt).toISOString())+'</span>':'')+'</div>'+
       '<div class="ag-play"><span class="feed-badge" style="background:'+badge.bg+';color:'+badge.fg+'">'+esc(badge.label)+'</span>'+
       '<span class="ag-text">'+(g.text?esc(cleanPlayText(g.text)):'<span style="color:var(--ink3)">Waiting for the first play…</span>')+(mine?'<span class="ag-mine">YOUR PLAYER</span>':'')+'</span></div></div>';
   }).join("");
-  return head(allNFL.games.length+" live")+items+'</div></div>';
+  return head(allNFL.games.length+" live"+(feedSort==="recent"?" \u00B7 newest first":" \u00B7 by kickoff"))+items+'</div></div>';
 }
 
 /* ===== SLEEPER FANTASY (free public API, api.sleeper.app — no key, no Claude usage) =====
