@@ -342,54 +342,39 @@
    sport lives on the GAME (see GAME_META), not the leg — one game is always one sport.
    kind by sport:
      mlb: "sb" | "hr" | "fs" (PrizePicks hitter fantasy score) | "hrr" (hits+runs+RBIs)
-     nba: "pts" | "reb" | "ast" | "tpm" | "pra" | "fs"
+     nba: "pts" | "reb" | "ast" | "tpm" | "pra" | "pa" (pts+ast) | "fs"
+          | "dd" (double-double: val = categories in double figures, line 1.5)
+          | "ml" (team to win: player = team name, team:"home"|"away", line 0)
+          | "total" (game total points, over/under)
      nfl: "pass_yds" | "pass_tds" | "rush_yds" | "rush_tds" | "rec_yds" | "receptions" | "rec_tds"
           | "any_td" (rush+rec+return TDs) | "fgm" (field goals made) | "q1_rec_yds" (1st-quarter receiving yards) | "fs"
    Each leg appears once; PARLAYS ties legs back to the slips they're on.
 */
 const BETS = [
-  { id:"l1",  kind:"q1_rec_yds", player:"KC Concepcion",       line:4.5,  side:"over", odds:"-115", game:"CLE @ NYJ", start:"1:00p" },
-  { id:"l12", kind:"any_td",     player:"Quinshon Judkins",    line:0.5,  side:"over", odds:"+165", game:"CLE @ NYJ", start:"1:00p" },
-  { id:"l3",  kind:"rec_yds",    player:"Chris Olave",         line:80.5, side:"over", odds:"-115", game:"MIN @ NO",  start:"1:00p" },
-  { id:"l11", kind:"any_td",     player:"Justin Jefferson",    line:0.5,  side:"over", odds:"+150", game:"MIN @ NO",  start:"1:00p" },
-  { id:"l15", kind:"any_td",     player:"Aaron Jones Sr.",     line:0.5,  side:"over", odds:"-125", game:"MIN @ NO",  start:"1:00p" },
-  { id:"l4",  kind:"receptions", player:"Malik Nabers",        line:4.5,  side:"over", odds:"-145", game:"NYG @ WSH", start:"1:00p" },
-  { id:"l6",  kind:"any_td",     player:"Jaylen Warren",       line:0.5,  side:"over", odds:"-130", game:"IND @ PIT", start:"1:00p" },
-  { id:"l8",  kind:"rec_yds",    player:"Jaylen Warren",       line:20.5, side:"over", odds:"-115", game:"IND @ PIT", start:"1:00p" },
-  { id:"l17", kind:"any_td",     player:"Jonathan Taylor",     line:0.5,  side:"over", odds:"-155", game:"IND @ PIT", start:"1:00p" },
-  { id:"l20", kind:"fgm",        player:"Spencer Shrader",     line:1.5,  side:"over", odds:"-115", game:"IND @ PIT", start:"1:00p" },
-  { id:"l9",  kind:"rec_yds",    player:"Mike Gesicki",        line:26.5, side:"over", odds:"-115", game:"CIN @ MIA", start:"1:00p" },
-  { id:"l13", kind:"any_td",     player:"Mike Gesicki",        line:0.5,  side:"over", odds:"+325", game:"CIN @ MIA", start:"1:00p" },
-  { id:"l16", kind:"any_td",     player:"Chase Brown",         line:0.5,  side:"over", odds:"-150", game:"CIN @ MIA", start:"1:00p" },
-  { id:"l19", kind:"pass_tds",   player:"Joe Burrow",          line:1.5,  side:"over", odds:"-175", game:"CIN @ MIA", start:"1:00p" },
-  { id:"l10", kind:"rec_yds",    player:"Xavier Hutchinson",   line:14.5, side:"over", odds:"-120", game:"HOU @ TEN", start:"1:00p" },
-  { id:"l22", kind:"rush_yds",   player:"Justin Herbert",      line:24.5, side:"over", odds:"-115", game:"DEN @ LAC", start:"4:05p" },
-  { id:"l5",  kind:"any_td",     player:"Colston Loveland",    line:0.5,  side:"over", odds:"+220", game:"CHI @ GB",  start:"4:25p" },
-  { id:"l14", kind:"any_td",     player:"D'Andre Swift",       line:0.5,  side:"over", odds:"-170", game:"CHI @ GB",  start:"4:25p" },
-  { id:"l2",  kind:"q1_rec_yds", player:"Christian McCaffrey", line:4.5,  side:"over", odds:"-115", game:"SF @ SEA",  start:"4:25p" },
-  { id:"l23", kind:"rush_yds",   player:"Brock Purdy",         line:23.5, side:"over", odds:"-120", game:"SF @ SEA",  start:"4:25p" },
-  { id:"l7",  kind:"any_td",     player:"Jameson Williams",    line:0.5,  side:"over", odds:"+175", game:"DET @ ARI", start:"4:25p" },
-  { id:"l24", kind:"any_td",     player:"Amon-Ra St. Brown",   line:0.5,  side:"over", odds:null,   game:"DET @ ARI", start:"4:25p" },
-  { id:"l25", kind:"any_td",     player:"Trey McBride",        line:0.5,  side:"over", odds:null,   game:"DET @ ARI", start:"4:25p" },
-  { id:"l18", kind:"any_td",     player:"Jeremiyah Love",      line:0.5,  side:"over", odds:"-115", game:"DET @ ARI", start:"4:25p" },
-  { id:"l21", kind:"pass_tds",   player:"Jacoby Brissett",     line:1.5,  side:"over", odds:"-140", game:"DET @ ARI", start:"4:25p" },
-  { id:"l26", kind:"any_td",     player:"Puka Nacua",          line:0.5,  side:"over", odds:"-130", game:"BUF @ LAR", start:"8:15p" },
+  /* PrizePicks 5-Pick Power Play */
+  { id:"pp1", kind:"pa",    player:"Wendell Carter Jr.", line:10.5, side:"over", odds:null,   game:"ATL @ ORL", start:"7:00p" },
+  { id:"pp2", kind:"ast",   player:"Trae Young",         line:7.5,  side:"over", odds:null,   game:"MIL @ WAS", start:"7:00p" },
+  { id:"pp3", kind:"pts",   player:"Anthony Edwards",    line:0.5,  side:"over", odds:null,   game:"MIN @ MIA", start:"7:30p" },
+  { id:"pp4", kind:"ast",   player:"Tyrese Haliburton",  line:8.5,  side:"over", odds:null,   game:"IND @ NOP", start:"8:00p" },
+  { id:"pp5", kind:"reb",   player:"Zach Edey",          line:7.5,  side:"over", odds:null,   game:"UTA @ MEM", start:"8:00p" },
+  /* Hard Rock SGPMax 5-Bet Parlay */
+  { id:"h1",  kind:"dd",    player:"Paolo Banchero",     line:1.5,  side:"over", odds:null,   game:"ATL @ ORL", start:"7:00p" },
+  { id:"h2",  kind:"dd",    player:"Jalen Johnson",      line:1.5,  side:"over", odds:null,   game:"ATL @ ORL", start:"7:00p" },
+  { id:"h3",  kind:"reb",   player:"Zach Edey",          line:8.5,  side:"over", odds:null,   game:"UTA @ MEM", start:"8:00p" },
+  { id:"h4",  kind:"pts",   player:"Zach Edey",          line:8.5,  side:"over", odds:null,   game:"UTA @ MEM", start:"8:00p" },
+  { id:"h5",  kind:"dd",    player:"Alperen Sengun",     line:1.5,  side:"over", odds:"+100", game:"DAL @ HOU", start:"8:30p" },
+  /* Hard Rock 3-Bet Parlay */
+  { id:"r1",  kind:"ml",    player:"Washington Wizards", team:"home", line:0, side:"over", odds:"-175", game:"MIL @ WAS", start:"7:00p" },
+  { id:"r2",  kind:"total", player:"Hornets–Nets total", line:214.5, side:"over", odds:"-175", game:"CHA @ BKN", start:"7:30p" },
+  { id:"r3",  kind:"ml",    player:"Memphis Grizzlies",  team:"home", line:0, side:"over", odds:"-120", game:"UTA @ MEM", start:"8:00p" },
 ];
-/* each slip: legs reference BETS ids */
+/* each slip: legs reference BETS ids. Leave [] for straight bets only. */
 const PARLAYS = [
-  { id:"p1",  name:"2-Bet Parlay", odds:"+250",  wager:20.45, payout:71.48,  legs:["l1","l2"] },
-  { id:"p2",  name:"2-Bet Parlay", odds:"+216",  wager:23,    payout:72.66,  legs:["l3","l4"] },
-  { id:"p3",  name:"3-Bet Parlay", odds:"+1457", wager:10,    payout:155.69, legs:["l5","l6","l7"] },
-  { id:"p4",  name:"3-Bet Parlay", odds:"+541",  wager:15,    payout:96.12,  legs:["l8","l9","l10"] },
-  { id:"p5",  name:"3-Bet Parlay", odds:"+2716", wager:10,    payout:281.56, legs:["l11","l12","l13"] },
-  { id:"p6",  name:"3-Bet Parlay", odds:"+406",  wager:15,    payout:75.87,  legs:["l6","l14","l15"] },
-  { id:"p7",  name:"3-Bet Parlay", odds:"+413",  wager:14,    payout:71.77,  legs:["l16","l17","l18"] },
-  { id:"p8",  name:"3-Bet Parlay", odds:"+413",  wager:1,     payout:5.13,   legs:["l16","l17","l18"] },
-  { id:"p9",  name:"3-Bet Parlay (25% boost)", odds:"+404", wager:25, payout:151.14, legs:["l19","l20","l21"] },
-  { id:"p10", name:"2-Bet Parlay", odds:"+243",  wager:20,    payout:68.55,  legs:["l22","l23"] },
-  { id:"p11", name:"SGPMax 3-Bet", odds:"+468",  wager:15,    payout:85.20,  legs:["l24","l25","l26"] },
+  { id:"p1", name:"PrizePicks 5-Pick Power Play", odds:null,   wager:25.49, payout:184.80, legs:["pp1","pp2","pp3","pp4","pp5"] },
+  { id:"p2", name:"SGPMax 5-Bet Parlay",          odds:"+981", wager:20,    payout:216.27, legs:["h1","h2","h3","h4","h5"] },
+  { id:"p3", name:"3-Bet Parlay",                 odds:"+353", wager:25,    payout:113.18, legs:["r1","r2","r3"] },
 ];
-const SLATE_DATE = "2026-10-11";  // blank = auto (today in US-Eastern). Games on another day set `date` in GAME_META.
+const SLATE_DATE = "2026-10-21";  // blank = auto (today in US-Eastern). Games on another day set `date` in GAME_META.
 const REFRESH_MS = 30000;
 function todayET(){ try{ return new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"}); }catch(_){ return new Date().toISOString().slice(0,10); } }
 const EFFECTIVE_DATE = (SLATE_DATE && /^\d{4}-\d{2}-\d{2}$/.test(SLATE_DATE)) ? SLATE_DATE : todayET();
@@ -398,17 +383,13 @@ const EFFECTIVE_DATE = (SLATE_DATE && /^\d{4}-\d{2}-\d{2}$/.test(SLATE_DATE)) ? 
    sport: "mlb" (statsapi.mlb.com) | "nfl" or "nba" (ESPN's public scoreboard/summary feed)
    date (optional): "YYYY-MM-DD" for a game not on SLATE_DATE (e.g. Monday Night Football) */
 const GAME_META = {
-  "CLE @ NYJ":{away:"Cleveland Browns",home:"New York Jets",sport:"nfl"},
-  "MIN @ NO": {away:"Minnesota Vikings",home:"New Orleans Saints",sport:"nfl"},
-  "NYG @ WSH":{away:"New York Giants",home:"Washington Commanders",sport:"nfl"},
-  "IND @ PIT":{away:"Indianapolis Colts",home:"Pittsburgh Steelers",sport:"nfl"},
-  "CIN @ MIA":{away:"Cincinnati Bengals",home:"Miami Dolphins",sport:"nfl"},
-  "HOU @ TEN":{away:"Houston Texans",home:"Tennessee Titans",sport:"nfl"},
-  "DEN @ LAC":{away:"Denver Broncos",home:"Los Angeles Chargers",sport:"nfl"},
-  "CHI @ GB": {away:"Chicago Bears",home:"Green Bay Packers",sport:"nfl"},
-  "SF @ SEA": {away:"San Francisco 49ers",home:"Seattle Seahawks",sport:"nfl"},
-  "DET @ ARI":{away:"Detroit Lions",home:"Arizona Cardinals",sport:"nfl"},
-  "BUF @ LAR":{away:"Buffalo Bills",home:"Los Angeles Rams",sport:"nfl",date:"2026-10-12"},
+  "ATL @ ORL":{away:"Atlanta Hawks",home:"Orlando Magic",sport:"nba"},
+  "MIL @ WAS":{away:"Milwaukee Bucks",home:"Washington Wizards",sport:"nba"},
+  "MIN @ MIA":{away:"Minnesota Timberwolves",home:"Miami Heat",sport:"nba"},
+  "CHA @ BKN":{away:"Charlotte Hornets",home:"Brooklyn Nets",sport:"nba"},
+  "IND @ NOP":{away:"Indiana Pacers",home:"New Orleans Pelicans",sport:"nba"},
+  "UTA @ MEM":{away:"Utah Jazz",home:"Memphis Grizzlies",sport:"nba"},
+  "DAL @ HOU":{away:"Dallas Mavericks",home:"Houston Rockets",sport:"nba"},
 };
 
 const STATUS = {
@@ -432,6 +413,10 @@ const KIND_META = {
   ast:{label:"AST", name:"assists"},
   tpm:{label:"3PM", name:"3-pointers made"},
   pra:{label:"PRA", name:"pts+reb+ast"},
+  pa:{label:"P+A", name:"pts+asts"},
+  dd:{label:"DD", name:"double-double"},
+  ml:{label:"ML", name:"to win"},
+  total:{label:"Total", name:"total points"},
   pass_yds:{label:"Pass Yds", name:"passing yards"},
   pass_tds:{label:"Pass TD", name:"passing TDs"},
   rush_yds:{label:"Rush Yds", name:"rushing yards"},
@@ -476,13 +461,17 @@ function getOpen(game){ if(game in userSet) return !!openGames[game]; return fal
 function allExpanded(){ return GAME_ORDER.every(g=>getOpen(g)); }
 function setAllOpen(open){ GAME_ORDER.forEach(g=>{ userSet[g]=true; openGames[g]=open; }); render(); }
 function updateExpandLabel(){ const b=document.getElementById("expandBtn"); if(b) b.textContent=allExpanded()?"Collapse all":"Expand all"; }
-function norm(s){ return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z ]/g," ").replace(/\s+/g," ").trim(); }
+function norm(s){ return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z ]/g," ").replace(/\s+/g," ").trim(); }
 function numFrom(v){ if(v==null||v==="") return 0; const m=String(v).match(/^(-?\d+(?:\.\d+)?)/); return m?parseFloat(m[1]):0; }
 function slipsFor(id){ return PARLAYS.filter(p=>p.legs.includes(id)).length; }
 
 /* ===== shared status logic ===== */
 function computeStatus(kind,val,line,state,lateGame,period){
   if(state==="pregame")return "pregame";
+  if(kind==="ml"){
+    if(state==="final") return val>0?"cleared":"busted";
+    return val>=0?"on_track":"behind";
+  }
   if(kind==="q1_rec_yds"){
     if(val>line) return "cleared";
     if(state==="final"||(period||0)>=2) return "busted";
@@ -647,11 +636,12 @@ function extractNBA(boxPlayers,name){
     const madeAt=key=>{ const i=idx[key]; if(i==null) return 0; const v=stats[i]; if(!v) return 0; const m=String(v).match(/^(\d+)/); return m?parseInt(m[1],10):0; };
     const pts=numAt("points"), reb=numAt("rebounds"), ast=numAt("assists"), stl=numAt("steals"), blk=numAt("blocks"), to=numAt("turnovers");
     const tpm=madeAt("threePointFieldGoalsMade-threePointFieldGoalsAttempted");
-    const pra=pts+reb+ast;
+    const pra=pts+reb+ast, pa=pts+ast;
+    const dd=[pts,reb,ast,stl,blk].filter(x=>x>=10).length;
     const fs=Math.round((pts+reb*1.2+ast*1.5+stl*3+blk*3-to)*10)/10;
-    return {pts,reb,ast,tpm,stl,blk,to,pra,fs,found:true};
+    return {pts,reb,ast,tpm,stl,blk,to,pra,pa,dd,fs,found:true};
   }
-  return {pts:0,reb:0,ast:0,tpm:0,stl:0,blk:0,to:0,pra:0,fs:0,found:false};
+  return {pts:0,reb:0,ast:0,tpm:0,stl:0,blk:0,to:0,pra:0,pa:0,dd:0,fs:0,found:false};
 }
 /* NFL box score: categories identified by ESPN's category name (passing, rushing, receiving,
    fumbles, kicking, kickReturns, puntReturns…), with a label-based fallback. */
@@ -766,8 +756,13 @@ function nflDetailLine(s,kind,extra){
   if(kind==="fs") parts.push("FS "+nflFantasyScore(s));
   return parts.join(", ")||"no stats yet";
 }
-function nbaDetailLine(s){
-  return s.pts+" PTS, "+s.reb+" REB, "+s.ast+" AST"+(s.tpm?(", "+s.tpm+" 3PM"):"")+", FS "+s.fs;
+function nbaDetailLine(s,kind){
+  let out=s.pts+" PTS, "+s.reb+" REB, "+s.ast+" AST"+(s.tpm?(", "+s.tpm+" 3PM"):"");
+  if(kind==="dd"){ if(s.stl>=5) out+=", "+s.stl+" STL"; if(s.blk>=5) out+=", "+s.blk+" BLK"; out+=" · "+s.dd+"/2 in double figures"; }
+  else if(kind==="pa") out+=" · P+A "+s.pa;
+  else if(kind==="pra") out+=" · PRA "+s.pra;
+  else if(kind==="fs") out+=", FS "+s.fs;
+  return out;
 }
 function applyFeedNFL(label,sum){
   const gs=espnGameState(sum);
@@ -797,12 +792,24 @@ function applyFeedNBA(label,sum){
   games[label]={ state: gs.finalState?"final":(gs.liveState?"live":"pregame"), sport:"nba",
     awayScore:gs.awayScore, homeScore:gs.homeScore, inning:gs.label };
   const boxPlayers=(sum.boxscore&&sum.boxscore.players)||[];
+  const parts=label.split(" @ ");
   BETS.filter(b=>b.game===label).forEach(b=>{
-    const s=extractNBA(boxPlayers,b.player);
-    let val=0;
-    if(b.kind==="pts")val=s.pts; else if(b.kind==="reb")val=s.reb; else if(b.kind==="ast")val=s.ast;
-    else if(b.kind==="tpm")val=s.tpm; else if(b.kind==="pra")val=s.pra; else if(b.kind==="fs")val=s.fs;
-    const detail=s.found?nbaDetailLine(s):((gs.liveState||gs.finalState)?"in lineup?":"");
+    let val=0, detail="";
+    if(b.kind==="ml"){
+      const mine=b.team==="away"?gs.awayScore:gs.homeScore, opp=b.team==="away"?gs.homeScore:gs.awayScore;
+      val=mine-opp;
+      detail=(gs.liveState||gs.finalState)?((val>0?"Up ":val<0?"Down ":"Tied")+(val?Math.abs(val):"")+" · "+parts[0]+" "+gs.awayScore+"–"+gs.homeScore+" "+parts[1]):"";
+    }else if(b.kind==="total"){
+      val=gs.awayScore+gs.homeScore;
+      detail=(gs.liveState||gs.finalState)?(val+" pts so far · need "+Math.max(0,Math.floor(b.line)+1-val)+" more"):"";
+      if(val>b.line) detail=val+" pts — over cleared";
+    }else{
+      const s=extractNBA(boxPlayers,b.player);
+      if(b.kind==="pts")val=s.pts; else if(b.kind==="reb")val=s.reb; else if(b.kind==="ast")val=s.ast;
+      else if(b.kind==="tpm")val=s.tpm; else if(b.kind==="pra")val=s.pra; else if(b.kind==="pa")val=s.pa;
+      else if(b.kind==="dd")val=s.dd; else if(b.kind==="fs")val=s.fs;
+      detail=s.found?nbaDetailLine(s,b.kind):((gs.liveState||gs.finalState)?"in lineup?":"");
+    }
     const status=computeStatus(b.kind,val,b.line,games[label].state,gs.period>=4,gs.period);
     live[b.id]={current:val,status:status,detail:detail,gameState:games[label].inning};
   });
@@ -1188,7 +1195,7 @@ function parlayCard(p){
   const st=parlayState(p);
   const legs=p.legs.map(id=>{ const b=BETS.find(x=>x.id===id); if(!b) return ""; const l=live[id]||{}; const m=sm(l.status);
     return '<div class="pleg"><span class="dot" style="background:'+m.dot+'"></span><span class="pleg-name">'+esc(b.player)+
-      ' <span>O'+b.line+' '+esc(propLabel(b.kind))+'</span></span><span class="pleg-st" style="color:'+m.fg+'">'+esc(m.label)+'</span></div>'; }).join("");
+      ' <span>'+esc(sideText(b,true))+'</span></span><span class="pleg-st" style="color:'+m.fg+'">'+esc(m.label)+'</span></div>'; }).join("");
   return '<div class="parlay"><div class="parlay-top"><div><div class="parlay-name">'+esc(p.name)+'<span class="odds">'+esc(p.odds)+'</span></div>'+
     '<div class="parlay-money">'+money(p.wager)+' to pay '+money(p.payout)+'</div></div>'+
     '<span class="chip" style="background:'+st.bg+';color:'+st.fg+'"><span class="dot" style="background:'+st.dot+'"></span>'+esc(st.label)+'</span></div>'+
@@ -1221,9 +1228,12 @@ function buildSummary(){
     '<div class="legend">'+legend+'</div></div>';
 }
 function sideText(b,short){
-  if(b.kind==="any_td"&&b.line===0.5) return short?"Anytime TD":"Anytime TD"+(b.odds?(" · "+b.odds):"");
+  const o=b.odds?(" · "+b.odds):"";
+  if(b.kind==="any_td"&&b.line===0.5) return short?"Anytime TD":"Anytime TD"+o;
+  if(b.kind==="dd") return short?"Double-double":"Double-double (yes)"+o;
+  if(b.kind==="ml") return short?"To win":"Moneyline (to win)"+o;
   if(short) return (b.side==="over"?"O":"U")+b.line+" "+propLabel(b.kind);
-  return (b.side==="over"?"Over":"Under")+" "+b.line+" "+propName(b.kind)+(b.odds?(" · "+b.odds):"");
+  return (b.side==="over"?"Over":"Under")+" "+b.line+" "+propName(b.kind)+o;
 }
 function legRow(b){
   const l=live[b.id], m=sm(l&&l.status); const n=slipsFor(b.id);
@@ -1255,7 +1265,7 @@ function buildPropsSidebar(){
 function myBetRow(b){
   const l=live[b.id]||{}; const st=sm(l.status); const n=slipsFor(b.id);
   const pct=b.line>0?Math.max(0,Math.min(100,Math.round(((l.current||0)/b.line)*100))):0;
-  const showBar=(l.status!=="pregame");
+  const showBar=(l.status!=="pregame" && b.kind!=="ml");
   return '<div class="mybet-row"><div class="mybet-top">'+
     '<div class="mybet-main"><div class="player">'+esc(b.player)+'</div>'+
     '<div class="prop">'+esc(sideText(b))+'</div>'+
