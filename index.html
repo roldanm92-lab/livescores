@@ -348,7 +348,7 @@
           | "total" (game total points, over/under)
      nfl: "pass_yds" | "pass_tds" | "rush_yds" | "rush_tds" | "rec_yds" | "receptions" | "rec_tds"
           | "any_td" (rush+rec+return TDs) | "fgm" (field goals made) | "q1_rec_yds" (1st-quarter receiving yards) | "fs"
-          | "long_rec" (longest reception) | "first_td" (first TD scorer of the game, line 0.5)
+          | "long_rec" (longest reception) | "pass_int" (interceptions thrown) | "q1_rush_yds" (1st-quarter rushing yards) | "first_td" (first TD scorer of the game, line 0.5)
    Each leg appears once; PARLAYS ties legs back to the slips they're on.
 */
 const BETS = [
@@ -390,6 +390,21 @@ const BETS = [
   { id:"g1", kind:"rush_yds",  player:"C.J. Stroud",         line:9.5,  side:"over", odds:"-130", game:"NYG @ HOU", start:"1:00p" },
   { id:"g2", kind:"rec_yds",   player:"Malik Nabers",        line:64.5, side:"over", odds:"-140", game:"NYG @ HOU", start:"1:00p" },
   { id:"g3", kind:"any_td",    player:"Nico Collins",        line:0.5,  side:"over", odds:"+125", game:"NYG @ HOU", start:"1:00p" },
+  /* Broncos @ Cardinals (4:05) */
+  { id:"h1", kind:"any_td",    player:"Trey McBride",        line:0.5,  side:"over", odds:"+125", game:"DEN @ ARI", start:"4:05p" },
+  { id:"h2", kind:"pass_int",  player:"Jacoby Brissett",     line:0.5,  side:"over", odds:"-130", game:"DEN @ ARI", start:"4:05p" },
+  { id:"h3", kind:"any_td",    player:"Jonah Coleman",       line:0.5,  side:"over", odds:"+375", game:"DEN @ ARI", start:"4:05p" },
+  /* Packers @ Lions (4:25) */
+  { id:"i1", kind:"any_td",    player:"Christian Watson",    line:0.5,  side:"over", odds:"+120", game:"GB @ DET",  start:"4:25p" },
+  { id:"i2", kind:"pass_tds",  player:"Jordan Love",         line:1.5,  side:"over", odds:"-220", game:"GB @ DET",  start:"4:25p" },
+  { id:"i3", kind:"receptions",player:"Isaac TeSlaa",        line:1.5,  side:"over", odds:null,   game:"GB @ DET",  start:"4:25p" },
+  { id:"i4", kind:"q1_rec_yds",player:"Tucker Kraft",        line:9.5,  side:"over", odds:null,   game:"GB @ DET",  start:"4:25p" },
+  { id:"i5", kind:"q1_rush_yds",player:"Josh Jacobs",        line:19.5, side:"over", odds:null,   game:"GB @ DET",  start:"4:25p" },
+  /* Rams @ Raiders (4:25) */
+  { id:"j1", kind:"any_td",    player:"Puka Nacua",          line:0.5,  side:"over", odds:"+105", game:"LAR @ LV",  start:"4:25p" },
+  { id:"j2", kind:"long_rec",  player:"Ashton Jeanty",       line:12.5, side:"over", odds:"-105", game:"LAR @ LV",  start:"4:25p" },
+  { id:"j3", kind:"any_td",    player:"Colby Parkinson",     line:0.5,  side:"over", odds:"+240", game:"LAR @ LV",  start:"4:25p" },
+  { id:"j4", kind:"fgm",       player:"Matt Gay",            line:1.5,  side:"over", odds:"-125", game:"LAR @ LV",  start:"4:25p" },
 ];
 /* each slip: legs reference BETS ids. */
 const PARLAYS = [
@@ -406,6 +421,11 @@ const PARLAYS = [
   { id:"p11", name:"First TD Parlay (Bijan/Allen/Pollard)", odds:"+2016", wager:5, payout:105.79, legs:["a1","f2","c6"] },
   { id:"p12", name:"SGP Max (CMC+Bijan / Hubbard / Judkins)", odds:"+851", wager:10, payout:95.1, legs:["a3","a2","d3","c5"] },
   { id:"p13", name:"Taylor 4+ Rec / Branch 25+ Yds",  odds:"+1025",  wager:10, payout:112.5,   legs:["f5","a6"] },
+  { id:"p14", name:"3-Leg TD Parlay (McBride/Nacua/Watson)", odds:"+915", wager:12.5, payout:126.84, legs:["h1","j1","i1"] },
+  { id:"p15", name:"Brissett INT / Love 2+ TD / Jeanty Long Rec", odds:"+402", wager:25, payout:125.61, legs:["h2","i2","j2"] },
+  { id:"p16", name:"2-Leg TD Parlay (Coleman/Parkinson)", odds:"+1515", wager:15, payout:242.25, legs:["h3","j3"] },
+  { id:"p17", name:"SGPMax: Love 2+ TD + TeSlaa 2+ Rec / Gay 2+ FG ($25 bonus)", odds:"+315", wager:25, payout:78.68, legs:["i2","i3","j4"] },
+  { id:"p18", name:"SGP: Kraft Q1 10+ Rec Yds / Jacobs Q1 20+ Rush Yds", odds:"+493", wager:14.5, payout:86.04, legs:["i4","i5"] },
 ];
 const SLATE_DATE = "2026-10-25";  // blank = auto (today in US-Eastern). Games on another day set `date` in GAME_META.
 const REFRESH_MS = 30000;
@@ -423,6 +443,9 @@ const GAME_META = {
   "IND @ MIN":{away:"Indianapolis Colts",home:"Minnesota Vikings",sport:"nfl"},
   "MIA @ NYJ":{away:"Miami Dolphins",home:"New York Jets",sport:"nfl"},
   "NYG @ HOU":{away:"New York Giants",home:"Houston Texans",sport:"nfl"},
+  "DEN @ ARI":{away:"Denver Broncos",home:"Arizona Cardinals",sport:"nfl"},
+  "GB @ DET": {away:"Green Bay Packers",home:"Detroit Lions",sport:"nfl"},
+  "LAR @ LV": {away:"Los Angeles Rams",home:"Las Vegas Raiders",sport:"nfl"},
 };
 
 const STATUS = {
@@ -461,6 +484,8 @@ const KIND_META = {
   fgm:{label:"FG", name:"field goals made"},
   q1_rec_yds:{label:"Q1 Rec Yds", name:"1st-quarter receiving yards"},
   long_rec:{label:"Long Rec", name:"longest reception"},
+  pass_int:{label:"INT", name:"interceptions thrown"},
+  q1_rush_yds:{label:"Q1 Rush Yds", name:"1st-quarter rushing yards"},
   first_td:{label:"1st TD", name:"first TD scorer"},
 };
 function propLabel(kind){ return (KIND_META[kind]&&KIND_META[kind].label)||String(kind).toUpperCase(); }
@@ -512,7 +537,7 @@ function computeStatus(kind,val,line,state,lateGame,period){
     if(val<0) return "busted";
     return state==="final"?"busted":"on_track";
   }
-  if(kind==="q1_rec_yds"){
+  if(kind==="q1_rec_yds"||kind==="q1_rush_yds"){
     if(val>line) return "cleared";
     if(state==="final"||(period||0)>=2) return "busted";
     return "on_track";
@@ -764,6 +789,20 @@ function q1RecYds(plays,re){
   });
   return {y,n};
 }
+function q1RushYds(plays,re){
+  let y=0,n=0; if(!re) return {y,n};
+  plays.forEach(p=>{
+    if(((p.period&&p.period.number)||0)!==1) return;
+    const t=cleanPlayText(p.text||""); if(/no play|kneels?|\bpass\b|sacked|punts|kicks|field goal|extra point/i.test(t)) return;
+    const m=t.match(re); if(!m||!/^[\s()\d:]*$/.test(t.slice(0,m.index))) return;   // rusher is named first
+    const after=t.slice(m.index+m[0].length);
+    let g=after.match(/for (-?\d+) yards?/i);
+    if(g){ y+=+g[1]; n++; return; }
+    g=after.match(/for a loss of (\d+) yards?/i); if(g){ y-=+g[1]; n++; return; }
+    if(/for no gain/i.test(after)) n++;
+  });
+  return {y,n};
+}
 function nflPlayBadge(p,isPasser){
   const ty=((p.type&&p.type.text)||"").toLowerCase(), t=(p.text||"").toLowerCase();
   if(/touchdown/.test(ty)||/touchdown/.test(t)&&!/no play/.test(t)) return {label:"TD",fg:"#15784A",bg:"#E6F4EC"};
@@ -795,7 +834,8 @@ function firstTDIsPlayer(pl,name){
   const re=abbrRegex(name); return !!(re&&re.test(head));
 }
 function nflDetailLine(s,kind,extra){
-  if(kind==="first_td") return extra||"";
+  if(kind==="first_td"||kind==="q1_rush_yds") return extra||"";
+  if(kind==="pass_int") return s.pass_int+" INT · "+s.pass_yds+" pass yds, "+s.pass_tds+" TD";
   if(kind==="long_rec") return "long "+s.rec_long+" · "+s.receptions+" rec, "+s.rec_yds+" yds";
   if(kind==="q1_rec_yds") return extra||"";
   if(kind==="fgm") return s.fgm+"/"+s.fga+" FG";
@@ -837,12 +877,15 @@ function applyFeedNFL(label,sum){
     else if(b.kind==="fgm")val=s.fgm;
     else if(b.kind==="fs")val=nflFantasyScore(s);
     else if(b.kind==="long_rec")val=s.rec_long;
+    else if(b.kind==="pass_int")val=s.pass_int;
+    else if(b.kind==="q1_rush_yds"){ const q=q1RushYds(plays,abbrRegex(b.player)); val=q.y;
+      extra="Q1: "+q.y+" rush yds on "+q.n+" carr"+(q.n===1?"y":"ies")+(gs.period>=2||gs.finalState?" (Q1 over)":""); }
     else if(b.kind==="first_td"){ const ft=firstTDPlay(sum);
       if(!ft){ val=0; extra=(gs.liveState||gs.finalState)?"no TD scored yet":""; }
       else { const mine=firstTDIsPlayer(ft,b.player); val=mine?1:-1; extra=(mine?"Scored the first TD: ":"First TD went elsewhere: ")+(ft.text||""); } }
     else if(b.kind==="q1_rec_yds"){ const q=q1RecYds(plays,abbrRegex(b.player)); val=q.y;
       extra="Q1: "+q.y+" rec yds on "+q.n+" catch"+(q.n===1?"":"es")+(gs.period>=2||gs.finalState?" (Q1 over)":""); }
-    const detail=(s.found||b.kind==="q1_rec_yds"||b.kind==="first_td")?nflDetailLine(s,b.kind,extra):((gs.liveState||gs.finalState)?"no stats yet — active?":"");
+    const detail=(s.found||b.kind==="q1_rec_yds"||b.kind==="q1_rush_yds"||b.kind==="first_td")?nflDetailLine(s,b.kind,extra):((gs.liveState||gs.finalState)?"no stats yet — active?":"");
     const status=computeStatus(b.kind,val,b.line,games[label].state,gs.period>=4,gs.period);
     live[b.id]={current:val,status:status,detail:detail,gameState:games[label].inning};
   });
