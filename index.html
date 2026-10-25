@@ -348,33 +348,66 @@
           | "total" (game total points, over/under)
      nfl: "pass_yds" | "pass_tds" | "rush_yds" | "rush_tds" | "rec_yds" | "receptions" | "rec_tds"
           | "any_td" (rush+rec+return TDs) | "fgm" (field goals made) | "q1_rec_yds" (1st-quarter receiving yards) | "fs"
+          | "long_rec" (longest reception) | "first_td" (first TD scorer of the game, line 0.5)
    Each leg appears once; PARLAYS ties legs back to the slips they're on.
 */
 const BETS = [
-  /* PrizePicks 5-Pick Power Play */
-  { id:"pp1", kind:"pa",    player:"Wendell Carter Jr.", line:10.5, side:"over", odds:null,   game:"ATL @ ORL", start:"7:00p" },
-  { id:"pp2", kind:"ast",   player:"Trae Young",         line:7.5,  side:"over", odds:null,   game:"MIL @ WAS", start:"7:00p" },
-  { id:"pp3", kind:"pts",   player:"Anthony Edwards",    line:0.5,  side:"over", odds:null,   game:"MIN @ MIA", start:"7:30p" },
-  { id:"pp4", kind:"ast",   player:"Tyrese Haliburton",  line:8.5,  side:"over", odds:null,   game:"IND @ NOP", start:"8:00p" },
-  { id:"pp5", kind:"reb",   player:"Zach Edey",          line:7.5,  side:"over", odds:null,   game:"UTA @ MEM", start:"8:00p" },
-  /* Hard Rock SGPMax 5-Bet Parlay */
-  { id:"h1",  kind:"dd",    player:"Paolo Banchero",     line:1.5,  side:"over", odds:null,   game:"ATL @ ORL", start:"7:00p" },
-  { id:"h2",  kind:"dd",    player:"Jalen Johnson",      line:1.5,  side:"over", odds:null,   game:"ATL @ ORL", start:"7:00p" },
-  { id:"h3",  kind:"reb",   player:"Zach Edey",          line:8.5,  side:"over", odds:null,   game:"UTA @ MEM", start:"8:00p" },
-  { id:"h4",  kind:"pts",   player:"Zach Edey",          line:8.5,  side:"over", odds:null,   game:"UTA @ MEM", start:"8:00p" },
-  { id:"h5",  kind:"dd",    player:"Alperen Sengun",     line:1.5,  side:"over", odds:"+100", game:"DAL @ HOU", start:"8:30p" },
-  /* Hard Rock 3-Bet Parlay */
-  { id:"r1",  kind:"ml",    player:"Washington Wizards", team:"home", line:0, side:"over", odds:"-175", game:"MIL @ WAS", start:"7:00p" },
-  { id:"r2",  kind:"total", player:"Hornets–Nets total", line:214.5, side:"over", odds:"-175", game:"CHA @ BKN", start:"7:30p" },
-  { id:"r3",  kind:"ml",    player:"Memphis Grizzlies",  team:"home", line:0, side:"over", odds:"-120", game:"UTA @ MEM", start:"8:00p" },
+  /* 49ers @ Falcons */
+  { id:"a1", kind:"first_td",  player:"Bijan Robinson",      line:0.5,  side:"over", odds:"+110", game:"SF @ ATL",  start:"1:00p" },
+  { id:"a2", kind:"any_td",    player:"Bijan Robinson",      line:0.5,  side:"over", odds:null,   game:"SF @ ATL",  start:"1:00p" },
+  { id:"a3", kind:"any_td",    player:"Christian McCaffrey", line:0.5,  side:"over", odds:null,   game:"SF @ ATL",  start:"1:00p" },
+  { id:"a4", kind:"any_td",    player:"George Kittle",       line:0.5,  side:"over", odds:"+105", game:"SF @ ATL",  start:"1:00p" },
+  { id:"a5", kind:"rec_yds",   player:"Zachariah Branch",    line:39.5, side:"over", odds:"+750", game:"SF @ ATL",  start:"1:00p" },
+  { id:"a6", kind:"rec_yds",   player:"Zachariah Branch",    line:24.5, side:"over", odds:"+275", game:"SF @ ATL",  start:"1:00p" },
+  /* Bengals @ Ravens */
+  { id:"b1", kind:"any_td",    player:"Josh Cuevas",         line:0.5,  side:"over", odds:"+900", game:"CIN @ BAL", start:"1:00p" },
+  { id:"b2", kind:"rec_yds",   player:"Tee Higgins",         line:65.5, side:"over", odds:"-115", game:"CIN @ BAL", start:"1:00p" },
+  /* Browns @ Titans */
+  { id:"c1", kind:"fgm",       player:"Andre Szmyt",         line:1.5,  side:"over", odds:"-135", game:"CLE @ TEN", start:"1:00p" },
+  { id:"c2", kind:"any_td",    player:"Deshaun Watson",      line:0.5,  side:"over", odds:"+375", game:"CLE @ TEN", start:"1:00p" },
+  { id:"c3", kind:"any_td",    player:"Harold Fannin Jr.",   line:0.5,  side:"over", odds:"+200", game:"CLE @ TEN", start:"1:00p" },
+  { id:"c4", kind:"long_rec",  player:"Quinshon Judkins",    line:7.5,  side:"over", odds:"-115", game:"CLE @ TEN", start:"1:00p" },
+  { id:"c5", kind:"any_td",    player:"Quinshon Judkins",    line:0.5,  side:"over", odds:"+190", game:"CLE @ TEN", start:"1:00p" },
+  { id:"c6", kind:"first_td",  player:"Tony Pollard",        line:0.5,  side:"over", odds:"+225", game:"CLE @ TEN", start:"1:00p" },
+  /* Buccaneers @ Panthers */
+  { id:"d1", kind:"q1_rec_yds",player:"Cade Otton",          line:4.5,  side:"over", odds:"-115", game:"TB @ CAR",  start:"1:00p" },
+  { id:"d2", kind:"fgm",       player:"Chase McLaughlin",    line:1.5,  side:"over", odds:"-125", game:"TB @ CAR",  start:"1:00p" },
+  { id:"d3", kind:"any_td",    player:"Chuba Hubbard",       line:0.5,  side:"over", odds:"-125", game:"TB @ CAR",  start:"1:00p" },
+  { id:"d4", kind:"rec_yds",   player:"Darren Waller",       line:22.5, side:"over", odds:"-115", game:"TB @ CAR",  start:"1:00p" },
+  { id:"d5", kind:"any_td",    player:"Sean Tucker",         line:0.5,  side:"over", odds:"+500", game:"TB @ CAR",  start:"1:00p" },
+  /* Colts @ Vikings */
+  { id:"e1", kind:"q1_rec_yds",player:"Josh Downs",          line:4.5,  side:"over", odds:"-135", game:"IND @ MIN", start:"1:00p" },
+  { id:"e2", kind:"any_td",    player:"T.J. Hockenson",      line:0.5,  side:"over", odds:"+220", game:"IND @ MIN", start:"1:00p" },
+  { id:"e3", kind:"any_td",    player:"Will Mallory",        line:0.5,  side:"over", odds:"+475", game:"IND @ MIN", start:"1:00p" },
+  { id:"e4", kind:"fgm",       player:"Will Reichard",       line:1.5,  side:"over", odds:"-195", game:"IND @ MIN", start:"1:00p" },
+  /* Dolphins @ Jets */
+  { id:"f1", kind:"any_td",    player:"Braelon Allen",       line:0.5,  side:"over", odds:"-110", game:"MIA @ NYJ", start:"1:00p" },
+  { id:"f2", kind:"first_td",  player:"Braelon Allen",       line:0.5,  side:"over", odds:"+210", game:"MIA @ NYJ", start:"1:00p" },
+  { id:"f3", kind:"any_td",    player:"Kenyon Sadiq",        line:0.5,  side:"over", odds:"+350", game:"MIA @ NYJ", start:"1:00p" },
+  { id:"f4", kind:"any_td",    player:"Mason Taylor",        line:0.5,  side:"over", odds:"+400", game:"MIA @ NYJ", start:"1:00p" },
+  { id:"f5", kind:"receptions",player:"Mason Taylor",        line:3.5,  side:"over", odds:"+200", game:"MIA @ NYJ", start:"1:00p" },
+  /* Giants @ Texans */
+  { id:"g1", kind:"rush_yds",  player:"C.J. Stroud",         line:9.5,  side:"over", odds:"-130", game:"NYG @ HOU", start:"1:00p" },
+  { id:"g2", kind:"rec_yds",   player:"Malik Nabers",        line:64.5, side:"over", odds:"-140", game:"NYG @ HOU", start:"1:00p" },
+  { id:"g3", kind:"any_td",    player:"Nico Collins",        line:0.5,  side:"over", odds:"+125", game:"NYG @ HOU", start:"1:00p" },
 ];
-/* each slip: legs reference BETS ids. Leave [] for straight bets only. */
+/* each slip: legs reference BETS ids. */
 const PARLAYS = [
-  { id:"p1", name:"PrizePicks 5-Pick Power Play", odds:null,   wager:25.49, payout:184.80, legs:["pp1","pp2","pp3","pp4","pp5"] },
-  { id:"p2", name:"SGPMax 5-Bet Parlay",          odds:"+981", wager:20,    payout:216.27, legs:["h1","h2","h3","h4","h5"] },
-  { id:"p3", name:"3-Bet Parlay",                 odds:"+353", wager:25,    payout:113.18, legs:["r1","r2","r3"] },
+  { id:"p1",  name:"Cuevas Anytime TD",               odds:"+900",   wager:15, payout:150,     legs:["b1"] },
+  { id:"p2",  name:"3-Leg TD Parlay (Sadiq/Cuevas/Mallory)", odds:"+25775", wager:5, payout:1293.75, legs:["f3","b1","e3"] },
+  { id:"p3",  name:"Q1 5+ Rec Yds (Otton/Downs)",     odds:"+225",   wager:25, payout:81.36,   legs:["d1","e1"] },
+  { id:"p4",  name:"2+ FGs (Reichard/Szmyt/McLaughlin)", odds:"+374", wager:25, payout:118.5,  legs:["e4","c1","d2"] },
+  { id:"p5",  name:"Rec Yds (Waller/Nabers/Higgins)", odds:"+499",   wager:15, payout:89.88,   legs:["d4","g2","b2"] },
+  { id:"p6",  name:"Branch 40+ Rec Yds",              odds:"+750",   wager:15, payout:127.5,   legs:["a5"] },
+  { id:"p7",  name:"3-Leg TD Parlay (Fannin/Hockenson/Taylor)", odds:"+4700", wager:3, payout:144, legs:["c3","e2","f4"] },
+  { id:"p8",  name:"3-Leg TD Parlay (Collins/Kittle/Allen)", odds:"+781", wager:25, payout:220.14, legs:["g3","a4","f1"] },
+  { id:"p9",  name:"Stroud Rush / Judkins Long Rec",  odds:"+231",   wager:15, payout:49.62,   legs:["g1","c4"] },
+  { id:"p10", name:"2-Leg TD Parlay (Tucker/Watson)", odds:"+2750",  wager:5,  payout:142.5,   legs:["d5","c2"] },
+  { id:"p11", name:"First TD Parlay (Bijan/Allen/Pollard)", odds:"+2016", wager:5, payout:105.79, legs:["a1","f2","c6"] },
+  { id:"p12", name:"SGP Max (CMC+Bijan / Hubbard / Judkins)", odds:"+851", wager:10, payout:95.1, legs:["a3","a2","d3","c5"] },
+  { id:"p13", name:"Taylor 4+ Rec / Branch 25+ Yds",  odds:"+1025",  wager:10, payout:112.5,   legs:["f5","a6"] },
 ];
-const SLATE_DATE = "2026-10-21";  // blank = auto (today in US-Eastern). Games on another day set `date` in GAME_META.
+const SLATE_DATE = "2026-10-25";  // blank = auto (today in US-Eastern). Games on another day set `date` in GAME_META.
 const REFRESH_MS = 30000;
 function todayET(){ try{ return new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"}); }catch(_){ return new Date().toISOString().slice(0,10); } }
 const EFFECTIVE_DATE = (SLATE_DATE && /^\d{4}-\d{2}-\d{2}$/.test(SLATE_DATE)) ? SLATE_DATE : todayET();
@@ -383,13 +416,13 @@ const EFFECTIVE_DATE = (SLATE_DATE && /^\d{4}-\d{2}-\d{2}$/.test(SLATE_DATE)) ? 
    sport: "mlb" (statsapi.mlb.com) | "nfl" or "nba" (ESPN's public scoreboard/summary feed)
    date (optional): "YYYY-MM-DD" for a game not on SLATE_DATE (e.g. Monday Night Football) */
 const GAME_META = {
-  "ATL @ ORL":{away:"Atlanta Hawks",home:"Orlando Magic",sport:"nba"},
-  "MIL @ WAS":{away:"Milwaukee Bucks",home:"Washington Wizards",sport:"nba"},
-  "MIN @ MIA":{away:"Minnesota Timberwolves",home:"Miami Heat",sport:"nba"},
-  "CHA @ BKN":{away:"Charlotte Hornets",home:"Brooklyn Nets",sport:"nba"},
-  "IND @ NOP":{away:"Indiana Pacers",home:"New Orleans Pelicans",sport:"nba"},
-  "UTA @ MEM":{away:"Utah Jazz",home:"Memphis Grizzlies",sport:"nba"},
-  "DAL @ HOU":{away:"Dallas Mavericks",home:"Houston Rockets",sport:"nba"},
+  "SF @ ATL": {away:"San Francisco 49ers",home:"Atlanta Falcons",sport:"nfl"},
+  "CIN @ BAL":{away:"Cincinnati Bengals",home:"Baltimore Ravens",sport:"nfl"},
+  "CLE @ TEN":{away:"Cleveland Browns",home:"Tennessee Titans",sport:"nfl"},
+  "TB @ CAR": {away:"Tampa Bay Buccaneers",home:"Carolina Panthers",sport:"nfl"},
+  "IND @ MIN":{away:"Indianapolis Colts",home:"Minnesota Vikings",sport:"nfl"},
+  "MIA @ NYJ":{away:"Miami Dolphins",home:"New York Jets",sport:"nfl"},
+  "NYG @ HOU":{away:"New York Giants",home:"Houston Texans",sport:"nfl"},
 };
 
 const STATUS = {
@@ -427,6 +460,8 @@ const KIND_META = {
   any_td:{label:"TD", name:"anytime TD"},
   fgm:{label:"FG", name:"field goals made"},
   q1_rec_yds:{label:"Q1 Rec Yds", name:"1st-quarter receiving yards"},
+  long_rec:{label:"Long Rec", name:"longest reception"},
+  first_td:{label:"1st TD", name:"first TD scorer"},
 };
 function propLabel(kind){ return (KIND_META[kind]&&KIND_META[kind].label)||String(kind).toUpperCase(); }
 function propName(kind){ return (KIND_META[kind]&&KIND_META[kind].name)||kind; }
@@ -471,6 +506,11 @@ function computeStatus(kind,val,line,state,lateGame,period){
   if(kind==="ml"){
     if(state==="final") return val>0?"cleared":"busted";
     return val>=0?"on_track":"behind";
+  }
+  if(kind==="first_td"){
+    if(val>0) return "cleared";
+    if(val<0) return "busted";
+    return state==="final"?"busted":"on_track";
   }
   if(kind==="q1_rec_yds"){
     if(val>line) return "cleared";
@@ -655,7 +695,7 @@ function nflCatName(cat,labels){
   return "";
 }
 function extractNFL(boxPlayers,name){
-  const s={pass_yds:0,pass_tds:0,pass_int:0,rush_yds:0,rush_tds:0,rec_yds:0,receptions:0,rec_tds:0,ret_tds:0,fumbles_lost:0,fgm:0,fga:0,found:false};
+  const s={pass_yds:0,pass_tds:0,pass_int:0,rush_yds:0,rush_tds:0,rec_yds:0,receptions:0,rec_tds:0,ret_tds:0,fumbles_lost:0,fgm:0,fga:0,rec_long:0,found:false};
   boxPlayers.forEach(teamBlock=>{
     (teamBlock.statistics||[]).forEach(cat=>{
       const labels=(cat.labels||cat.names||[]).map(x=>String(x).toUpperCase());
@@ -666,7 +706,7 @@ function extractNFL(boxPlayers,name){
       const cn=nflCatName(cat,labels);
       if(cn==="passing"){ s.pass_yds+=at("YDS"); s.pass_tds+=at("TD"); s.pass_int+=at("INT"); }
       else if(cn==="rushing"){ s.rush_yds+=at("YDS"); s.rush_tds+=at("TD"); }
-      else if(cn==="receiving"){ s.receptions+=at("REC"); s.rec_yds+=at("YDS"); s.rec_tds+=at("TD"); }
+      else if(cn==="receiving"){ s.receptions+=at("REC"); s.rec_yds+=at("YDS"); s.rec_tds+=at("TD"); s.rec_long=Math.max(s.rec_long,at("LONG")); }
       else if(cn==="fumbles"){ s.fumbles_lost+=at("LOST"); }
       else if(cn==="kicking"){ const i=labels.indexOf("FG"); if(i>=0){ const m=String(stats[i]||"").match(/^(\d+)\s*\/\s*(\d+)/); if(m){ s.fgm+=+m[1]; s.fga+=+m[2]; } } }
       else if(cn==="kickreturns"||cn==="puntreturns"){ s.ret_tds+=at("TD"); }
@@ -739,7 +779,24 @@ function nflPlayBadge(p,isPasser){
 }
 function cleanPlayText(t){ t=String(t||"").replace(/^\((?:shotgun|no huddle|no huddle, shotgun)\)\s*/i,""); return t.length>150?t.slice(0,147)+"…":t; }
 
+/* first TD of the game from ESPN's scoringPlays (chronological). Returns {scorer text, isPlayer} or null */
+function firstTDPlay(sum){
+  const sp=(sum.scoringPlays||[]);
+  for(const pl of sp){
+    const ty=((pl.type&&pl.type.text)||(pl.scoringType&&pl.scoringType.displayName)||"")+" "+(pl.text||"");
+    if(/touchdown/i.test(ty)||(pl.scoringType&&/touchdown/i.test(pl.scoringType.name||""))) return pl;
+  }
+  return null;
+}
+function firstTDIsPlayer(pl,name){
+  const head=String(pl.text||"").split(/\s\d+\s*(yd|yard)/i)[0];   // scorer is named before the yardage
+  const n=norm(name.replace(/\s+(Jr|Sr|II|III|IV)\.?$/i,"")), h=norm(head);
+  if(h&&(h.includes(n)||n.includes(h))) return true;
+  const re=abbrRegex(name); return !!(re&&re.test(head));
+}
 function nflDetailLine(s,kind,extra){
+  if(kind==="first_td") return extra||"";
+  if(kind==="long_rec") return "long "+s.rec_long+" · "+s.receptions+" rec, "+s.rec_yds+" yds";
   if(kind==="q1_rec_yds") return extra||"";
   if(kind==="fgm") return s.fgm+"/"+s.fga+" FG";
   const parts=[];
@@ -779,9 +836,13 @@ function applyFeedNFL(label,sum){
     else if(b.kind==="rec_tds")val=s.rec_tds; else if(b.kind==="any_td")val=s.any_td;
     else if(b.kind==="fgm")val=s.fgm;
     else if(b.kind==="fs")val=nflFantasyScore(s);
+    else if(b.kind==="long_rec")val=s.rec_long;
+    else if(b.kind==="first_td"){ const ft=firstTDPlay(sum);
+      if(!ft){ val=0; extra=(gs.liveState||gs.finalState)?"no TD scored yet":""; }
+      else { const mine=firstTDIsPlayer(ft,b.player); val=mine?1:-1; extra=(mine?"Scored the first TD: ":"First TD went elsewhere: ")+(ft.text||""); } }
     else if(b.kind==="q1_rec_yds"){ const q=q1RecYds(plays,abbrRegex(b.player)); val=q.y;
       extra="Q1: "+q.y+" rec yds on "+q.n+" catch"+(q.n===1?"":"es")+(gs.period>=2||gs.finalState?" (Q1 over)":""); }
-    const detail=(s.found||b.kind==="q1_rec_yds")?nflDetailLine(s,b.kind,extra):((gs.liveState||gs.finalState)?"no stats yet — active?":"");
+    const detail=(s.found||b.kind==="q1_rec_yds"||b.kind==="first_td")?nflDetailLine(s,b.kind,extra):((gs.liveState||gs.finalState)?"no stats yet — active?":"");
     const status=computeStatus(b.kind,val,b.line,games[label].state,gs.period>=4,gs.period);
     live[b.id]={current:val,status:status,detail:detail,gameState:games[label].inning};
   });
@@ -1230,6 +1291,7 @@ function buildSummary(){
 function sideText(b,short){
   const o=b.odds?(" · "+b.odds):"";
   if(b.kind==="any_td"&&b.line===0.5) return short?"Anytime TD":"Anytime TD"+o;
+  if(b.kind==="first_td") return short?"First TD":"First TD scorer"+o;
   if(b.kind==="dd") return short?"Double-double":"Double-double (yes)"+o;
   if(b.kind==="ml") return short?"To win":"Moneyline (to win)"+o;
   if(short) return (b.side==="over"?"O":"U")+b.line+" "+propLabel(b.kind);
