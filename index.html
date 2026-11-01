@@ -374,6 +374,18 @@ const BETS = [
   { id:"t1",  kind:"any_td",     player:"Chase Brown",         line:1.5,   side:"over", odds:"+350", game:"TEN @ CIN", start:"1:00p" },
   { id:"t2",  kind:"any_td",     player:"Javonte Williams",    line:1.5,   side:"over", odds:"+220", game:"ARI @ DAL", start:"1:00p" },
   { id:"t3",  kind:"any_td",     player:"Rhamondre Stevenson", line:1.5,   side:"over", odds:"+400", game:"NE @ MIA",  start:"4:25p" },
+  /* added 4:38 PM — late-window slips */
+  { id:"f1",  kind:"team_first_td", player:"Kenneth Walker III", team:"KC", line:0.5, side:"over", odds:"+190", game:"KC @ DEN", start:"4:25p" },
+  { id:"f2",  kind:"team_first_td", player:"Rhamondre Stevenson", team:"NE", line:0.5, side:"over", odds:"+220", game:"NE @ MIA", start:"4:25p" },
+  { id:"b1",  kind:"any_td",     player:"Kyren Williams",      line:0.5,   side:"over", odds:"-140", game:"LAC @ LAR", start:"4:05p" },
+  { id:"b2",  kind:"any_td",     player:"Eli Raridon",         line:0.5,   side:"over", odds:"+325", game:"NE @ MIA",  start:"4:25p" },
+  { id:"b3",  kind:"any_td",     player:"Blake Corum",         line:0.5,   side:"over", odds:"+155", game:"LAC @ LAR", start:"4:05p" },
+  { id:"b4",  kind:"any_td",     player:"Hunter Henry",        line:0.5,   side:"over", odds:"+175", game:"NE @ MIA",  start:"4:25p" },
+  { id:"b5",  kind:"any_td",     player:"Puka Nacua",          line:0.5,   side:"over", odds:"-130", game:"LAC @ LAR", start:"4:05p" },
+  { id:"b6",  kind:"any_td",     player:"Travis Kelce",        line:0.5,   side:"over", odds:"+260", game:"KC @ DEN",  start:"4:25p" },
+  { id:"b7",  kind:"fgm",        player:"Cameron Dicker",      line:1.5,   side:"over", odds:"-110", game:"LAC @ LAR", start:"4:05p" },
+  { id:"b8",  kind:"rec_yds",    player:"Jonah Coleman",       line:16.5,  side:"over", odds:"-180", game:"KC @ DEN",  start:"4:25p" },
+  { id:"b9",  kind:"pass_tds",   player:"Drake Maye",          line:1.5,   side:"over", odds:"-125", game:"NE @ MIA",  start:"4:25p" },
 ];
 /* each slip: legs reference BETS ids. Bonus-bet slips note it in the name (payout excludes the bonus stake). */
 const PARLAYS = [
@@ -387,6 +399,11 @@ const PARLAYS = [
   { id:"p8",  name:"2-Leg Parlay",              odds:"+1306", wager:10, payout:140.62, legs:["a10","a11"] },
   { id:"p9",  name:"3-Leg Parlay",              odds:"+462",  wager:25, payout:140.50, legs:["a12","a13","a14"] },
   { id:"p10", name:"3-Leg Parlay (bonus bet)",  odds:"+7100", wager:5,  payout:355.00, legs:["t1","t2","t3"] },
+  { id:"p11", name:"2-Leg Parlay",              odds:"+828",  wager:15, payout:139.20, legs:["f1","f2"] },
+  { id:"p12", name:"2-Leg Parlay",              odds:"+629",  wager:15, payout:109.29, legs:["b1","b2"] },
+  { id:"p13", name:"2-Leg Parlay",              odds:"+601",  wager:15, payout:105.19, legs:["b3","b4"] },
+  { id:"p14", name:"3-Leg Parlay",              odds:"+2607", wager:10, payout:270.69, legs:["b5","b6","b2"] },
+  { id:"p15", name:"3-Leg Parlay",              odds:"+435",  wager:25, payout:133.64, legs:["b7","b8","b9"] },
 ];
 const SLATE_DATE = "2026-11-01";
 const REFRESH_MS = 30000;
@@ -404,6 +421,8 @@ const GAME_META = {
   "BAL @ BUF": {away:"Baltimore Ravens",     home:"Buffalo Bills",          sport:"nfl"},
   "NE @ MIA":  {away:"New England Patriots", home:"Miami Dolphins",         sport:"nfl"},
   "TEN @ CIN": {away:"Tennessee Titans",     home:"Cincinnati Bengals",     sport:"nfl"},
+  "LAC @ LAR": {away:"Los Angeles Chargers", home:"Los Angeles Rams",       sport:"nfl"},
+  "KC @ DEN":  {away:"Kansas City Chiefs",   home:"Denver Broncos",         sport:"nfl"},
 };
 
 const STATUS = {
@@ -437,6 +456,7 @@ const KIND_META = {
   any_td:{label:"TD", name:"anytime TD"},
   fgm:{label:"FG", name:"field goals made"},
   q1_rec_yds:{label:"Q1 Rec Yds", name:"1st-quarter receiving yards"},
+  team_first_td:{label:"Team 1st TD", name:"team first TD scorer"},
 };
 function propLabel(kind){ return (KIND_META[kind]&&KIND_META[kind].label)||String(kind).toUpperCase(); }
 function propName(kind){ return (KIND_META[kind]&&KIND_META[kind].name)||kind; }
@@ -744,7 +764,24 @@ function nflPlayBadge(p,isPasser){
 }
 function cleanPlayText(t){ t=String(t||"").replace(/^\((?:shotgun|no huddle|no huddle, shotgun)\)\s*/i,""); return t.length>150?t.slice(0,147)+"…":t; }
 
+/* team first TD scorer: the team's first touchdown (from ESPN scoringPlays) must be scored by this player.
+   Busts as soon as anyone else scores the team's first TD, or at final if the team never scores one. */
+function teamFirstTD(sum,team,name,isFinal){
+  const T=String(team||"").toUpperCase();
+  const tds=(sum.scoringPlays||[]).filter(pl=>{
+    const ty=((pl.type&&pl.type.text)||"")+" "+((pl.scoringType&&pl.scoringType.displayName)||"")+" "+(pl.text||"");
+    const ab=String((pl.team&&pl.team.abbreviation)||"").toUpperCase();
+    return /touchdown/i.test(ty) && (ab===T || espnAbbr(ab)===T);
+  });
+  if(!tds.length) return {val:0,status:isFinal?"busted":"on_track",detail:T+" hasn't scored a TD yet"};
+  const txt=tds[0].text||"";
+  const base=norm(String(name).replace(/\s+(Jr|Sr|II|III|IV)\.?$/i,""));
+  const re=abbrRegex(name); const am=re?txt.match(re):null;
+  const scored=norm(txt).startsWith(base) || (am && am.index===0);
+  return {val:scored?1:0,status:scored?"cleared":"busted",detail:(scored?"Scored "+T+"'s first TD: ":"First "+T+" TD: ")+cleanPlayText(txt)};
+}
 function nflDetailLine(s,kind,extra){
+  if(kind==="team_first_td") return extra||"";
   if(kind==="q1_rec_yds") return extra||"";
   if(kind==="fgm") return s.fgm+"/"+s.fga+" FG";
   const parts=[];
@@ -781,8 +818,11 @@ function applyFeedNFL(label,sum){
     else if(b.kind==="fs")val=nflFantasyScore(s);
     else if(b.kind==="q1_rec_yds"){ const q=q1RecYds(plays,abbrRegex(b.player)); val=q.y;
       extra="Q1: "+q.y+" rec yds on "+q.n+" catch"+(q.n===1?"":"es")+(gs.period>=2||gs.finalState?" (Q1 over)":""); }
-    const detail=(s.found||b.kind==="q1_rec_yds")?nflDetailLine(s,b.kind,extra):((gs.liveState||gs.finalState)?"no stats yet — active?":"");
-    const status=computeStatus(b.kind,val,b.line,games[label].state,gs.period>=4,gs.period);
+    let tf=null;
+    if(b.kind==="team_first_td"){ tf=teamFirstTD(sum,b.team,b.player,gs.finalState); val=tf.val; extra=tf.detail; }
+    const detail=(s.found||b.kind==="q1_rec_yds"||b.kind==="team_first_td")?nflDetailLine(s,b.kind,extra):((gs.liveState||gs.finalState)?"no stats yet — active?":"");
+    let status=computeStatus(b.kind,val,b.line,games[label].state,gs.period>=4,gs.period);
+    if(tf && games[label].state!=="pregame") status=tf.status;
     live[b.id]={current:val,status:status,detail:detail,gameState:games[label].inning};
   });
   buildNFLPlayFeed(label,plays,sum,boxPlayers);
@@ -1183,7 +1223,7 @@ function parlayCard(p){
   const st=parlayState(p);
   const legs=p.legs.map(id=>{ const b=BETS.find(x=>x.id===id); if(!b) return ""; const l=live[id]||{}; const m=sm(l.status);
     return '<div class="pleg"><span class="dot" style="background:'+m.dot+'"></span><span class="pleg-name">'+esc(b.player)+
-      ' <span>O'+b.line+' '+esc(propLabel(b.kind))+'</span></span><span class="pleg-st" style="color:'+m.fg+'">'+esc(m.label)+'</span></div>'; }).join("");
+      ' <span>'+esc(sideText(b,true))+'</span></span><span class="pleg-st" style="color:'+m.fg+'">'+esc(m.label)+'</span></div>'; }).join("");
   return '<div class="parlay"><div class="parlay-top"><div><div class="parlay-name">'+esc(p.name)+'<span class="odds">'+esc(p.odds)+'</span></div>'+
     '<div class="parlay-money">'+money(p.wager)+' to pay '+money(p.payout)+'</div></div>'+
     '<span class="chip" style="background:'+st.bg+';color:'+st.fg+'"><span class="dot" style="background:'+st.dot+'"></span>'+esc(st.label)+'</span></div>'+
@@ -1218,6 +1258,7 @@ function buildSummary(){
 function sideText(b,short){
   if(b.kind==="any_td"&&b.line===0.5) return short?"Anytime TD":"Anytime TD"+(b.odds?(" · "+b.odds):"");
   if(b.kind==="any_td"&&b.line===1.5) return short?"2+ TDs":"2+ TDs"+(b.odds?(" · "+b.odds):"");
+  if(b.kind==="team_first_td") return short?(b.team+" 1st TD"):(b.team+" first TD scorer"+(b.odds?(" · "+b.odds):""));
   if(short) return (b.side==="over"?"O":"U")+b.line+" "+propLabel(b.kind);
   return (b.side==="over"?"Over":"Under")+" "+b.line+" "+propName(b.kind)+(b.odds?(" · "+b.odds):"");
 }
