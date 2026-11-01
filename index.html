@@ -334,55 +334,76 @@
     </div>
   </div>
 
-  <p class="foot" id="foot">Live data from free public feeds (statsapi.mlb.com for MLB, ESPN’s scoreboard for NFL/NBA) — no Claude usage. First Team Basket is read from ESPN’s play-by-play: the player’s team’s first scoring play (free throws count); a non-starter is shown as Void and drops out of the parlay. For research, not betting advice.</p>
+  <p class="foot" id="foot">Live data from free public feeds (statsapi.mlb.com for MLB, ESPN’s scoreboard for NFL/NBA) — no Claude usage. NFL fantasy score = PrizePicks full PPR. Q1 props are read from ESPN’s play-by-play. For research, not betting advice.</p>
 </div>
 
 <script>
-/* ===== YOUR BETS =====
+/* ===== YOUR BETS — Sunday, November 1, 2026 (NFL Week 8) =====
    sport lives on the GAME (see GAME_META), not the leg — one game is always one sport.
    kind by sport:
      mlb: "sb" | "hr" | "fs" (PrizePicks hitter fantasy score) | "hrr" (hits+runs+RBIs)
-     nba: "pts" | "reb" | "ast" | "tpm" | "pra" | "pr" (pts+reb) | "fs" | "ftb" (first team basket scorer, must start)
+     nba: "pts" | "reb" | "ast" | "tpm" | "pra" | "fs"
      nfl: "pass_yds" | "pass_tds" | "rush_yds" | "rush_tds" | "rec_yds" | "receptions" | "rec_tds"
           | "any_td" (rush+rec+return TDs) | "fgm" (field goals made) | "q1_rec_yds" (1st-quarter receiving yards) | "fs"
+   "2+ TDs" legs are any_td with line 1.5.
    Each leg appears once; PARLAYS ties legs back to the slips they're on.
 */
 const BETS = [
-  /* Bovada 8-leg First Team Basket parlay */
-  { id:"f1", kind:"ftb", player:"Paul Reed",          line:0.5, side:"over", odds:"+260", game:"DET @ BKN", start:"7:30p" },
-  { id:"f2", kind:"ftb", player:"Wendell Carter Jr.", line:0.5, side:"over", odds:"+350", game:"ORL @ TOR", start:"7:30p" },
-  { id:"f3", kind:"ftb", player:"Mitchell Robinson",  line:0.5, side:"over", odds:"+340", game:"CHI @ BOS", start:"7:30p" },
-  { id:"f4", kind:"ftb", player:"Bam Adebayo",        line:0.5, side:"over", odds:"+290", game:"IND @ MIA", start:"8:00p" },
-  { id:"f5", kind:"ftb", player:"Jabari Smith Jr.",   line:0.5, side:"over", odds:"+400", game:"HOU @ DAL", start:"8:00p" },
-  { id:"f6", kind:"ftb", player:"Rudy Gobert",        line:0.5, side:"over", odds:"+250", game:"LAC @ MIN", start:"8:00p" },
-  { id:"f7", kind:"ftb", player:"Nikola Jokic",       line:0.5, side:"over", odds:"+230", game:"DEN @ PHX", start:"10:00p" },
-  { id:"f8", kind:"ftb", player:"Walker Kessler",     line:0.5, side:"over", odds:"+250", game:"LAL @ GSW", start:"10:00p" },
-  /* Bovada 4-team props parlay */
-  { id:"v1", kind:"reb", player:"Jayson Tatum",   line:7.5,  side:"over", odds:"-150", game:"CHI @ BOS", start:"7:30p" },
-  { id:"v2", kind:"pts", player:"Fred VanVleet",  line:10.5, side:"over", odds:"-190", game:"HOU @ DAL", start:"8:00p" },
-  { id:"v3", kind:"pr",  player:"Bobby Portis",   line:16.5, side:"over", odds:"-160", game:"IND @ MIA", start:"8:00p" },
-  { id:"v4", kind:"pts", player:"Jalen Green",    line:14.5, side:"over", odds:"-150", game:"DEN @ PHX", start:"10:00p" },
+  { id:"a1",  kind:"any_td",     player:"Mason Taylor",        line:0.5,   side:"over", odds:"+375", game:"LV @ NYJ",  start:"1:00p" },
+  { id:"a2",  kind:"any_td",     player:"T.J. Hockenson",      line:0.5,   side:"over", odds:"+250", game:"MIN @ DET", start:"1:00p" },
+  { id:"a3",  kind:"any_td",     player:"CeeDee Lamb",         line:0.5,   side:"over", odds:"-135", game:"ARI @ DAL", start:"1:00p" },
+  { id:"a4",  kind:"any_td",     player:"Darnell Washington",  line:0.5,   side:"over", odds:"+250", game:"CLE @ PIT", start:"1:00p" },
+  { id:"a5",  kind:"any_td",     player:"George Pickens",      line:0.5,   side:"over", odds:"+100", game:"ARI @ DAL", start:"1:00p" },
+  { id:"a6",  kind:"any_td",     player:"KC Concepcion",       line:0.5,   side:"over", odds:"+325", game:"CLE @ PIT", start:"1:00p" },
+  { id:"k1",  kind:"fgm",        player:"Cam Little",          line:1.5,   side:"over", odds:"-150", game:"IND @ JAX", start:"1:00p" },
+  { id:"k2",  kind:"fgm",        player:"Andre Szmyt",         line:1.5,   side:"over", odds:"-105", game:"CLE @ PIT", start:"1:00p" },
+  { id:"k3",  kind:"fgm",        player:"Nick Folk",           line:1.5,   side:"over", odds:"-115", game:"ATL @ TB",  start:"1:00p" },
+  { id:"y1",  kind:"rush_yds",   player:"Bhayshul Tuten",      line:59.5,  side:"over", odds:null,   game:"IND @ JAX", start:"1:00p" },
+  { id:"y2",  kind:"pass_yds",   player:"Daniel Jones",        line:192.5, side:"over", odds:null,   game:"IND @ JAX", start:"1:00p" },
+  { id:"y3",  kind:"receptions", player:"Justice Hill",        line:1.5,   side:"over", odds:"-160", game:"BAL @ BUF", start:"1:00p" },
+  { id:"q1",  kind:"q1_rec_yds", player:"T.J. Hockenson",      line:4.5,   side:"over", odds:"-135", game:"MIN @ DET", start:"1:00p" },
+  { id:"q2",  kind:"q1_rec_yds", player:"Cade Otton",          line:4.5,   side:"over", odds:"-105", game:"ATL @ TB",  start:"1:00p" },
+  { id:"a7",  kind:"any_td",     player:"Braelon Allen",       line:0.5,   side:"over", odds:"-130", game:"LV @ NYJ",  start:"1:00p" },
+  { id:"a8",  kind:"any_td",     player:"Jaylen Warren",       line:0.5,   side:"over", odds:"+100", game:"CLE @ PIT", start:"1:00p" },
+  { id:"a9",  kind:"any_td",     player:"Bhayshul Tuten",      line:0.5,   side:"over", odds:"-110", game:"IND @ JAX", start:"1:00p" },
+  { id:"a10", kind:"any_td",     player:"Omar Cooper Jr.",     line:0.5,   side:"over", odds:"+275", game:"LV @ NYJ",  start:"1:00p" },
+  { id:"a11", kind:"any_td",     player:"Ted Hurst III",       line:0.5,   side:"over", odds:"+275", game:"ATL @ TB",  start:"1:00p" },
+  { id:"a12", kind:"any_td",     player:"Josh Allen",          line:0.5,   side:"over", odds:"-170", game:"BAL @ BUF", start:"1:00p" },
+  { id:"a13", kind:"any_td",     player:"Bucky Irving",        line:0.5,   side:"over", odds:"+100", game:"ATL @ TB",  start:"1:00p" },
+  { id:"a14", kind:"any_td",     player:"Rhamondre Stevenson", line:0.5,   side:"over", odds:"-130", game:"NE @ MIA",  start:"4:25p" },
+  { id:"t1",  kind:"any_td",     player:"Chase Brown",         line:1.5,   side:"over", odds:"+350", game:"TEN @ CIN", start:"1:00p" },
+  { id:"t2",  kind:"any_td",     player:"Javonte Williams",    line:1.5,   side:"over", odds:"+220", game:"ARI @ DAL", start:"1:00p" },
+  { id:"t3",  kind:"any_td",     player:"Rhamondre Stevenson", line:1.5,   side:"over", odds:"+400", game:"NE @ MIA",  start:"4:25p" },
 ];
-/* each slip: legs reference BETS ids. wager/payout null = not shown on the screenshot. */
+/* each slip: legs reference BETS ids. Bonus-bet slips note it in the name (payout excludes the bonus stake). */
 const PARLAYS = [
-  { id:"p1", name:"8-Leg First Team Basket", odds:"+1,445,465", wager:1.60, payout:23129.04, legs:["f1","f2","f3","f4","f5","f6","f7","f8"] },
-  { id:"p2", name:"4-Team Parlay", odds:"≈+589", wager:null, payout:null, legs:["v1","v2","v3","v4"] },
+  { id:"p1",  name:"2-Leg Parlay",              odds:"+1563", wager:10, payout:166.25, legs:["a1","a2"] },
+  { id:"p2",  name:"2-Leg Parlay",              odds:"+509",  wager:15, payout:91.39,  legs:["a3","a4"] },
+  { id:"p3",  name:"2-Leg Parlay",              odds:"+750",  wager:12, payout:102.00, legs:["a5","a6"] },
+  { id:"p4",  name:"3-Leg Parlay (bonus bet)",  odds:"+508",  wager:25, payout:127.09, legs:["k1","k2","k3"] },
+  { id:"p5",  name:"3-Leg SGP Max",             odds:"+395",  wager:24, payout:118.71, legs:["y1","y2","y3"] },
+  { id:"p6",  name:"2-Leg Parlay",              odds:"+240",  wager:25, payout:84.96,  legs:["q1","q2"] },
+  { id:"p7",  name:"3-Leg Parlay",              odds:"+576",  wager:25, payout:168.88, legs:["a7","a8","a9"] },
+  { id:"p8",  name:"2-Leg Parlay",              odds:"+1306", wager:10, payout:140.62, legs:["a10","a11"] },
+  { id:"p9",  name:"3-Leg Parlay",              odds:"+462",  wager:25, payout:140.50, legs:["a12","a13","a14"] },
+  { id:"p10", name:"3-Leg Parlay (bonus bet)",  odds:"+7100", wager:5,  payout:355.00, legs:["t1","t2","t3"] },
 ];
-const SLATE_DATE = "2026-10-30";
+const SLATE_DATE = "2026-11-01";
 const REFRESH_MS = 30000;
 function todayET(){ try{ return new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"}); }catch(_){ return new Date().toISOString().slice(0,10); } }
 const EFFECTIVE_DATE = (SLATE_DATE && /^\d{4}-\d{2}-\d{2}$/.test(SLATE_DATE)) ? SLATE_DATE : todayET();
 
 /* map each game label to full team names + which sport/feed to use. */
 const GAME_META = {
-  "DET @ BKN":{away:"Detroit Pistons",home:"Brooklyn Nets",sport:"nba"},
-  "ORL @ TOR":{away:"Orlando Magic",home:"Toronto Raptors",sport:"nba"},
-  "CHI @ BOS":{away:"Chicago Bulls",home:"Boston Celtics",sport:"nba"},
-  "IND @ MIA":{away:"Indiana Pacers",home:"Miami Heat",sport:"nba"},
-  "HOU @ DAL":{away:"Houston Rockets",home:"Dallas Mavericks",sport:"nba"},
-  "LAC @ MIN":{away:"LA Clippers",home:"Minnesota Timberwolves",sport:"nba"},
-  "DEN @ PHX":{away:"Denver Nuggets",home:"Phoenix Suns",sport:"nba"},
-  "LAL @ GSW":{away:"Los Angeles Lakers",home:"Golden State Warriors",sport:"nba"},
+  "LV @ NYJ":  {away:"Las Vegas Raiders",    home:"New York Jets",          sport:"nfl"},
+  "MIN @ DET": {away:"Minnesota Vikings",    home:"Detroit Lions",          sport:"nfl"},
+  "ARI @ DAL": {away:"Arizona Cardinals",    home:"Dallas Cowboys",         sport:"nfl"},
+  "CLE @ PIT": {away:"Cleveland Browns",     home:"Pittsburgh Steelers",    sport:"nfl"},
+  "IND @ JAX": {away:"Indianapolis Colts",   home:"Jacksonville Jaguars",   sport:"nfl"},
+  "ATL @ TB":  {away:"Atlanta Falcons",      home:"Tampa Bay Buccaneers",   sport:"nfl"},
+  "BAL @ BUF": {away:"Baltimore Ravens",     home:"Buffalo Bills",          sport:"nfl"},
+  "NE @ MIA":  {away:"New England Patriots", home:"Miami Dolphins",         sport:"nfl"},
+  "TEN @ CIN": {away:"Tennessee Titans",     home:"Cincinnati Bengals",     sport:"nfl"},
 };
 
 const STATUS = {
@@ -390,7 +411,6 @@ const STATUS = {
   on_track:{label:"On track",fg:"#1D4ED8", bg:"#E9F0FE", dot:"#2563EB", verb:"is on pace"},
   behind:{label:"Behind",    fg:"#946410", bg:"#FBF1DB", dot:"#C7891A", verb:"is behind the line"},
   busted:{label:"Busted",    fg:"#B42D45", bg:"#FBE8EC", dot:"#D03A52", verb:"is busted"},
-  void:{label:"Void",        fg:"#586069", bg:"#EFF1F4", dot:"#C5CBD3", verb:"was voided"},
   final:{label:"Final",      fg:"#586069", bg:"#EFF1F4", dot:"#A6AEB8", verb:"finished"},
   pregame:{label:"Pregame",  fg:"#586069", bg:"#F1F3F5", dot:"#A6AEB8", verb:"hasn’t started"},
   no_game:{label:"No game",  fg:"#586069", bg:"#F1F3F5", dot:"#A6AEB8", verb:"has no game"},
@@ -407,8 +427,6 @@ const KIND_META = {
   ast:{label:"AST", name:"assists"},
   tpm:{label:"3PM", name:"3-pointers made"},
   pra:{label:"PRA", name:"pts+reb+ast"},
-  pr:{label:"P+R", name:"pts+reb"},
-  ftb:{label:"1st Team Bkt", name:"first team basket"},
   pass_yds:{label:"Pass Yds", name:"passing yards"},
   pass_tds:{label:"Pass TD", name:"passing TDs"},
   rush_yds:{label:"Rush Yds", name:"rushing yards"},
@@ -446,9 +464,9 @@ let timer=null, ticker=null, nextAt=0, busy=false;
 
 /* helpers */
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
-function money(n){ return "$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}).replace(/\.00$/,""); }
-function tally(list){ let hit=0,dead=0,liveN=0,pend=0,voidN=0; list.forEach(b=>{ const s=(live[b.id]||{}).status;
-  if(s==="cleared")hit++; else if(s==="busted")dead++; else if(s==="void")voidN++; else if(s==="on_track"||s==="behind"||s==="final")liveN++; else pend++; }); return {hit,dead,liveN,pend,voidN}; }
+function money(n){ return "$"+Number(n).toFixed(2).replace(/\.00$/,""); }
+function tally(list){ let hit=0,dead=0,liveN=0,pend=0; list.forEach(b=>{ const s=(live[b.id]||{}).status;
+  if(s==="cleared")hit++; else if(s==="busted")dead++; else if(s==="on_track"||s==="behind"||s==="final")liveN++; else pend++; }); return {hit,dead,liveN,pend}; }
 function getOpen(game){ if(game in userSet) return !!openGames[game]; return false; }
 function allExpanded(){ return GAME_ORDER.every(g=>getOpen(g)); }
 function setAllOpen(open){ GAME_ORDER.forEach(g=>{ userSet[g]=true; openGames[g]=open; }); render(); }
@@ -624,30 +642,12 @@ function extractNBA(boxPlayers,name){
     const madeAt=key=>{ const i=idx[key]; if(i==null) return 0; const v=stats[i]; if(!v) return 0; const m=String(v).match(/^(\d+)/); return m?parseInt(m[1],10):0; };
     const pts=numAt("points"), reb=numAt("rebounds"), ast=numAt("assists"), stl=numAt("steals"), blk=numAt("blocks"), to=numAt("turnovers");
     const tpm=madeAt("threePointFieldGoalsMade-threePointFieldGoalsAttempted");
-    const pra=pts+reb+ast, pr=pts+reb;
+    const pra=pts+reb+ast;
     const fs=Math.round((pts+reb*1.2+ast*1.5+stl*3+blk*3-to)*10)/10;
-    return {pts,reb,ast,tpm,stl,blk,to,pra,pr,fs,found:true};
+    return {pts,reb,ast,tpm,stl,blk,to,pra,fs,found:true};
   }
-  return {pts:0,reb:0,ast:0,tpm:0,stl:0,blk:0,to:0,pra:0,pr:0,fs:0,found:false};
+  return {pts:0,reb:0,ast:0,tpm:0,stl:0,blk:0,to:0,pra:0,fs:0,found:false};
 }
-/* --- NBA first-team-basket helpers (ESPN summary: boxscore.players + plays) --- */
-function nbaPlayerInfo(boxPlayers,name){
-  for(const tb of boxPlayers){
-    const cat=(tb.statistics||[])[0]; if(!cat) continue;
-    const a=findAthlete(cat.athletes||[],name); if(!a) continue;
-    const t=tb.team||{};
-    return { teamId:String(t.id||""), team:t.shortDisplayName||t.name||t.abbreviation||"team",
-      athId:String((a.athlete&&a.athlete.id)||""), starter:a.starter, dnp:!!a.didNotPlay };
-  }
-  return null;
-}
-function nbaIdToName(boxPlayers){
-  const m={}; boxPlayers.forEach(tb=>(tb.statistics||[]).forEach(cat=>(cat.athletes||[]).forEach(a=>{
-    const at=a.athlete||{}; if(at.id!=null&&at.displayName) m[String(at.id)]=at.displayName; }))); return m;
-}
-function nbaScoringPlays(sum){ return (sum.plays||[]).filter(p=>p.scoringPlay && (p.scoreValue==null||+p.scoreValue>0)); }
-function playScorerId(p){ const pt=(p.participants||[])[0]; return pt&&pt.athlete&&pt.athlete.id!=null?String(pt.athlete.id):""; }
-function playCtx(p){ const per=(p.period&&p.period.number)||0; const clk=(p.clock&&p.clock.displayValue)||""; return [per?("Q"+per):"",clk].filter(Boolean).join(" · "); }
 /* NFL box score: categories identified by ESPN's category name (passing, rushing, receiving,
    fumbles, kicking, kickReturns, puntReturns…), with a label-based fallback. */
 function nflCatName(cat,labels){
@@ -761,9 +761,8 @@ function nflDetailLine(s,kind,extra){
   if(kind==="fs") parts.push("FS "+nflFantasyScore(s));
   return parts.join(", ")||"no stats yet";
 }
-function nbaDetailLine(s,kind){
-  const head=kind==="pr"?("P+R "+s.pr+" · "):(kind==="pra"?("PRA "+s.pra+" · "):"");
-  return head+s.pts+" PTS, "+s.reb+" REB, "+s.ast+" AST"+(s.tpm?(", "+s.tpm+" 3PM"):"");
+function nbaDetailLine(s){
+  return s.pts+" PTS, "+s.reb+" REB, "+s.ast+" AST"+(s.tpm?(", "+s.tpm+" 3PM"):"")+", FS "+s.fs;
 }
 function applyFeedNFL(label,sum){
   const gs=espnGameState(sum);
@@ -790,61 +789,19 @@ function applyFeedNFL(label,sum){
 }
 function applyFeedNBA(label,sum){
   const gs=espnGameState(sum);
-  const state=gs.finalState?"final":(gs.liveState?"live":"pregame");
-  games[label]={ state: state, sport:"nba", awayScore:gs.awayScore, homeScore:gs.homeScore, inning:gs.label };
+  games[label]={ state: gs.finalState?"final":(gs.liveState?"live":"pregame"), sport:"nba",
+    awayScore:gs.awayScore, homeScore:gs.homeScore, inning:gs.label };
   const boxPlayers=(sum.boxscore&&sum.boxscore.players)||[];
-  const scoring=nbaScoringPlays(sum); const idToName=nbaIdToName(boxPlayers);
   BETS.filter(b=>b.game===label).forEach(b=>{
-    if(b.kind==="ftb"){
-      let status="pregame", detail="Must start for action", val=0;
-      if(state!=="pregame"){
-        const pi=nbaPlayerInfo(boxPlayers,b.player);
-        if(!pi){ status="on_track"; detail="not in box score yet — check name/team"; }
-        else if(pi.starter===false){ status="void"; detail="Didn’t start — leg voided"; }
-        else{
-          const first=scoring.find(p=>String((p.team&&p.team.id)||"")===pi.teamId);
-          if(!first){ status=(state==="final")?"busted":"on_track"; detail="Started · "+pi.team+" yet to score"; }
-          else{
-            const sid=playScorerId(first);
-            if(sid&&sid===pi.athId){ status="cleared"; val=1; detail="Scored the "+pi.team+"’ first bucket ("+playCtx(first)+")"; }
-            else{ status="busted"; detail="First "+pi.team+" bucket: "+(idToName[sid]||first.shortText||first.text||"someone else"); }
-          }
-        }
-      }
-      live[b.id]={current:val,status:status,detail:detail,gameState:games[label].inning};
-      return;
-    }
     const s=extractNBA(boxPlayers,b.player);
     let val=0;
     if(b.kind==="pts")val=s.pts; else if(b.kind==="reb")val=s.reb; else if(b.kind==="ast")val=s.ast;
-    else if(b.kind==="tpm")val=s.tpm; else if(b.kind==="pra")val=s.pra; else if(b.kind==="pr")val=s.pr; else if(b.kind==="fs")val=s.fs;
-    const detail=s.found?nbaDetailLine(s,b.kind):((gs.liveState||gs.finalState)?"in lineup?":"");
-    const status=computeStatus(b.kind,val,b.line,state,gs.period>=4,gs.period);
+    else if(b.kind==="tpm")val=s.tpm; else if(b.kind==="pra")val=s.pra; else if(b.kind==="fs")val=s.fs;
+    const detail=s.found?nbaDetailLine(s):((gs.liveState||gs.finalState)?"in lineup?":"");
+    const status=computeStatus(b.kind,val,b.line,games[label].state,gs.period>=4,gs.period);
     live[b.id]={current:val,status:status,detail:detail,gameState:games[label].inning};
   });
-  buildNBAPlayFeed(label,sum,boxPlayers,scoring,idToName);
-}
-/* NBA feed: every scoring play by your players, plus who scored each team's first bucket for your first-basket legs */
-function buildNBAPlayFeed(label,sum,boxPlayers,scoring,idToName){
-  const legs=BETS.filter(b=>b.game===label); if(!legs.length) return;
-  const byAth={};
-  legs.forEach(b=>{ const pi=nbaPlayerInfo(boxPlayers,b.player); if(pi&&pi.athId&&!byAth[pi.athId]) byAth[pi.athId]={bet:b,name:b.player}; });
-  const firstDone={};
-  scoring.forEach((p,idx)=>{
-    const sid=playScorerId(p); const tid=String((p.team&&p.team.id)||"");
-    const ftbLeg=!firstDone[tid] && legs.find(b=>{ if(b.kind!=="ftb") return false; const pi=nbaPlayerInfo(boxPlayers,b.player); return pi&&pi.teamId===tid; });
-    const isFirst=!firstDone[tid]; firstDone[tid]=1;
-    const mine=byAth[sid];
-    if(!mine && !(isFirst && ftbLeg)) return;
-    const badge=espnEventBadge("nba",((p.type&&p.type.text)||"")+" "+(p.text||""));
-    const betId=mine?mine.bet.id:ftbLeg.id;
-    let event=p.shortText||p.text||badge.label;
-    if(isFirst&&ftbLeg) event="First team bucket — "+event;
-    playFeed.push({ ts: p.wallclock || ("b"+label+String(p.sequenceNumber||idx).padStart(6,"0")),
-      key: label+"|nba|"+(p.id||idx), game: label, betId: betId, when: p.wallclock||null, cats:["mine"],
-      player: mine?mine.name:(idToName[sid]||"Opponent"), event: event, ctx: playCtx(p),
-      line: (live[betId]&&live[betId].detail)||"", badgeOverride: badge });
-  });
+  buildScoringFeedESPN(label,"nba",sum,boxPlayers);
 }
 /* NFL feed: every play that names one of your players (from ESPN drives); falls back to scoring plays */
 function buildNFLPlayFeed(label,plays,sum,boxPlayers){
@@ -883,7 +840,7 @@ function espnEventBadge(sport,text){
     if(/two.point|2pt/.test(t)) return {label:"2PT",fg:"#15784A",bg:"#E6F4EC"};
     return {label:"SCORE",fg:"#586069",bg:"#EFF1F4"};
   }
-  if(/three point|3pt|three pointer/.test(t)) return {label:"3PM",fg:"#15784A",bg:"#E6F4EC"};
+  if(/three point|3pt/.test(t)) return {label:"3PM",fg:"#15784A",bg:"#E6F4EC"};
   if(/free throw/.test(t)) return {label:"FT",fg:"#946410",bg:"#FBF1DB"};
   return {label:"FG",fg:"#1D4ED8",bg:"#E9F0FE"};
 }
@@ -972,7 +929,7 @@ function buildAllGamesHTML(){
       '<div class="ag-play"><span class="feed-badge" style="background:'+badge.bg+';color:'+badge.fg+'">'+esc(badge.label)+'</span>'+
       '<span class="ag-text">'+(g.text?esc(cleanPlayText(g.text)):'<span style="color:var(--ink3)">Waiting for the first play…</span>')+(mine?'<span class="ag-mine">YOUR PLAYER</span>':'')+'</span></div></div>';
   }).join("");
-  return head(allNFL.games.length+" live"+(feedSort==="recent"?" \u00B7 newest first":" \u00B7 by kickoff"))+items+'</div></div>';
+  return head(allNFL.games.length+" live"+(feedSort==="recent"?" · newest first":" · by kickoff"))+items+'</div></div>';
 }
 
 /* ===== SLEEPER FANTASY (free public API, api.sleeper.app — no key, no Claude usage) =====
@@ -1214,11 +1171,11 @@ function setBanner(kind){
   else{ el.innerHTML=""; }
 }
 
-/* parlays — void legs (non-starters on "must start" props) drop out */
+/* parlays */
 function parlayState(p){
-  const sts=p.legs.map(id=>(live[id]||{}).status).filter(s=>s!=="void");
+  const sts=p.legs.map(id=>(live[id]||{}).status);
   if(sts.includes("busted")) return {key:"dead",label:"Dead",fg:"#B42D45",bg:"#FBE8EC",dot:"#D03A52"};
-  if(sts.length && sts.every(s=>s==="cleared")) return {key:"won",label:"Won",fg:"#15784A",bg:"#E6F4EC",dot:"#1E9E5A"};
+  if(sts.every(s=>s==="cleared")) return {key:"won",label:"Won",fg:"#15784A",bg:"#E6F4EC",dot:"#1E9E5A"};
   const hit=sts.filter(s=>s==="cleared").length;
   return {key:"alive",label:"Alive · "+hit+"/"+sts.length,fg:"#1D4ED8",bg:"#E9F0FE",dot:"#2563EB"};
 }
@@ -1226,33 +1183,31 @@ function parlayCard(p){
   const st=parlayState(p);
   const legs=p.legs.map(id=>{ const b=BETS.find(x=>x.id===id); if(!b) return ""; const l=live[id]||{}; const m=sm(l.status);
     return '<div class="pleg"><span class="dot" style="background:'+m.dot+'"></span><span class="pleg-name">'+esc(b.player)+
-      ' <span>'+esc(sideText(b,true))+'</span></span><span class="pleg-st" style="color:'+m.fg+'">'+esc(m.label)+'</span></div>'; }).join("");
-  const moneyLine=p.wager!=null?(money(p.wager)+' to pay '+money(p.payout)):'Stake not on screenshot · odds calculated from legs';
+      ' <span>O'+b.line+' '+esc(propLabel(b.kind))+'</span></span><span class="pleg-st" style="color:'+m.fg+'">'+esc(m.label)+'</span></div>'; }).join("");
   return '<div class="parlay"><div class="parlay-top"><div><div class="parlay-name">'+esc(p.name)+'<span class="odds">'+esc(p.odds)+'</span></div>'+
-    '<div class="parlay-money">'+moneyLine+'</div></div>'+
+    '<div class="parlay-money">'+money(p.wager)+' to pay '+money(p.payout)+'</div></div>'+
     '<span class="chip" style="background:'+st.bg+';color:'+st.fg+'"><span class="dot" style="background:'+st.dot+'"></span>'+esc(st.label)+'</span></div>'+
     '<div class="parlay-legs">'+legs+'</div></div>';
 }
 
 /* summary + cards */
 function buildSummary(){
-  const t=tally(BETS); const active=BETS.length-t.voidN; const allClear=active>0&&t.hit===active;
+  const t=tally(BETS); const allClear=t.hit===BETS.length;
   let title;
   if(t.dead>0) title=t.dead+" leg"+(t.dead>1?"s":"")+" busted";
   else if(allClear) title="All legs cleared";
-  else title=(active-t.hit)+" of "+active+" legs to go";
+  else title=(BETS.length-t.hit)+" of "+BETS.length+" legs to go";
   const counts={}; BETS.forEach(b=>{ counts[b.kind]=(counts[b.kind]||0)+1; });
   const meta=Object.keys(counts).map(k=>counts[k]+" "+propLabel(k)).join(" · ")+" · "+GAME_ORDER.length+" games";
   const lg=(color,n,label)=>'<span class="lg"><span class="dot" style="background:'+color+'"></span>'+n+' '+label+'</span>';
   let legend=lg(STATUS.cleared.dot,t.hit,"cleared")+lg(STATUS.on_track.dot,t.liveN,"live")+lg(STATUS.pregame.dot,t.pend,"pregame");
   if(t.dead>0) legend+=lg(STATUS.busted.dot,t.dead,"busted");
-  if(t.voidN>0) legend+=lg(STATUS.void.dot,t.voidN,"void");
   let sub="";
   if(PARLAYS.length){
-    const risk=PARLAYS.reduce((a,p)=>a+(p.wager||0),0); const ps=PARLAYS.map(parlayState);
+    const risk=PARLAYS.reduce((a,p)=>a+p.wager,0); const ps=PARLAYS.map(parlayState);
     const won=ps.filter(s=>s.key==="won").length, dead=ps.filter(s=>s.key==="dead").length, alive=PARLAYS.length-won-dead;
-    const winnings=PARLAYS.filter((p,i)=>ps[i].key==="won").reduce((a,p)=>a+(p.payout||0),0);
-    const live$=PARLAYS.filter((p,i)=>ps[i].key!=="dead").reduce((a,p)=>a+(p.payout||0),0);
+    const winnings=PARLAYS.filter((p,i)=>ps[i].key==="won").reduce((a,p)=>a+p.payout,0);
+    const live$=PARLAYS.filter((p,i)=>ps[i].key!=="dead").reduce((a,p)=>a+p.payout,0);
     sub='<div class="summary-sub">'+PARLAYS.length+' slips · '+money(risk)+' risked · '+alive+' alive, '+won+' won, '+dead+' dead'+
       (won?' · '+money(winnings)+' locked':'')+' · '+money(live$)+' still live</div>';
   }
@@ -1262,7 +1217,7 @@ function buildSummary(){
 }
 function sideText(b,short){
   if(b.kind==="any_td"&&b.line===0.5) return short?"Anytime TD":"Anytime TD"+(b.odds?(" · "+b.odds):"");
-  if(b.kind==="ftb") return short?"1st team basket":"First team basket (must start)"+(b.odds?(" · "+b.odds):"");
+  if(b.kind==="any_td"&&b.line===1.5) return short?"2+ TDs":"2+ TDs"+(b.odds?(" · "+b.odds):"");
   if(short) return (b.side==="over"?"O":"U")+b.line+" "+propLabel(b.kind);
   return (b.side==="over"?"Over":"Under")+" "+b.line+" "+propName(b.kind)+(b.odds?(" · "+b.odds):"");
 }
@@ -1296,7 +1251,7 @@ function buildPropsSidebar(){
 function myBetRow(b){
   const l=live[b.id]||{}; const st=sm(l.status); const n=slipsFor(b.id);
   const pct=b.line>0?Math.max(0,Math.min(100,Math.round(((l.current||0)/b.line)*100))):0;
-  const showBar=(l.status!=="pregame"&&l.status!=="void");
+  const showBar=(l.status!=="pregame");
   return '<div class="mybet-row"><div class="mybet-top">'+
     '<div class="mybet-main"><div class="player">'+esc(b.player)+'</div>'+
     '<div class="prop">'+esc(sideText(b))+'</div>'+
@@ -1314,7 +1269,7 @@ function buildMyBets(){
     html+='<div class="section-label">Slips</div>'+ps.map(parlayCard).join("")+'<div class="section-label">Legs</div>';
   }
   const sorted=BETS.slice().sort((a,b)=>{
-    const da=["cleared","busted","void"].includes((live[a.id]||{}).status)?1:0, db=["cleared","busted","void"].includes((live[b.id]||{}).status)?1:0;
+    const da=["cleared","busted"].includes((live[a.id]||{}).status)?1:0, db=["cleared","busted"].includes((live[b.id]||{}).status)?1:0;
     if(da!==db) return da-db;
     return sortKey(a.game,a.start)<sortKey(b.game,b.start)?-1:1;
   });
