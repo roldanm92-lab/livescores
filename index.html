@@ -49,6 +49,7 @@
   .seg button{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:0;background:none;color:var(--ink2);padding:5px 11px;border-radius:7px}
   .seg button:hover{color:var(--ink)}
   .seg button.is-active{background:var(--accent);color:#fff}
+  #hideFinalsBtn.is-active{color:#5A52E0;border-color:#D4D1F7;background:#EEEDFC}
   .pickers{display:flex;gap:6px;flex-wrap:wrap}
   .picker{position:relative}
   .pk-btn .cv{font-size:10px;opacity:.7;margin-left:2px}
@@ -184,6 +185,7 @@
       <button data-status="pre">Upcoming</button>
       <button data-status="post">Final</button>
     </div>
+    <button class="chipbtn" id="hideFinalsBtn" title="Hide games that have finished"><span class="fdot"></span>Hide finals</button>
   </div>
 
   <div class="tabs" id="tabs">
@@ -224,6 +226,7 @@ let sportsOn = lsGet("gt_sports",{nfl:true,nba:true});
 let tracked  = new Set(lsGet("gt_tracked",[]));
 let view     = lsGet("gt_view","all");          // all | tracked
 let statusF  = lsGet("gt_status","all");        // all | in | pre | post
+let hideFinals = lsGet("gt_hideFinals",false);
 let playsMode= "all";                           // all | scoring
 let activeTab= "games", dayOffset=0;
 let events={nfl:[],nba:[]}, loaded={nfl:false,nba:false}, errs={nfl:null,nba:null};
@@ -340,7 +343,7 @@ function activeSports(){ return Object.keys(SPORTS).filter(s=>sportsOn[s]); }
 const ORDER={in:0,pre:1,post:2};
 function sortGames(a,b){ return (ORDER[a.state]-ORDER[b.state]) || (a.date<b.date?-1:a.date>b.date?1:0); }
 function inView(g){ return view==="all" || tracked.has(g.id); }
-function shownGames(s){ return events[s].filter(g=>inView(g)&&(statusF==="all"||g.state===statusF)).sort(sortGames); }
+function shownGames(s){ return events[s].filter(g=>inView(g)&&(statusF==="all"||g.state===statusF)&&!(hideFinals&&g.state==="post")).sort(sortGames); }
 function viewGamesAll(){ return activeSports().flatMap(s=>events[s].filter(inView)); }
 function findGame(id){ for(const s in events){ const g=events[s].find(x=>x.id===id); if(g) return g; } return null; }
 
@@ -429,9 +432,10 @@ function renderGames(){
   if(!sports.length){ el.innerHTML='<div class="empty">Pick NFL, NBA, or both above.</div>'; return; }
   el.innerHTML=sports.map(s=>{
     const L=SPORTS[s].label, all=events[s];
+    const finN=all.filter(g=>g.state==="post"&&inView(g)).length;
     const liveN=all.filter(g=>g.state==="in").length, tN=all.filter(g=>tracked.has(g.id)).length;
     const head='<div class="sec-head"><span class="sec-title">'+L+'</span>'+
-      (loaded[s]?'<span class="sec-meta">'+all.length+' game'+(all.length===1?"":"s")+' · '+liveN+' live · '+tN+' tracked</span>':'')+
+      (loaded[s]?'<span class="sec-meta">'+all.length+' game'+(all.length===1?"":"s")+' · '+liveN+' live · '+tN+' tracked'+(hideFinals&&finN?' · '+finN+' final hidden':'')+'</span>':'')+
       (all.length?'<span class="sec-actions"><button class="link" data-trackall="'+s+'">Track all</button><button class="link" data-clear="'+s+'">Clear</button></span>':'')+'</div>';
     let body;
     if(!loaded[s]) body='<div class="note note-load"><span class="spin">↻</span> Loading '+L+' games…</div>';
@@ -439,7 +443,7 @@ function renderGames(){
     else if(!all.length) body='<div class="empty">No '+L+' games on '+esc(dayLabel(slateDate()))+'.</div>';
     else{ const list=shownGames(s);
       body=list.length?'<div class="grid">'+list.map(card).join("")+'</div>':
-        '<div class="empty">'+(view==="tracked"&&!tN?'No '+L+' games tracked yet — tap “Track all” or switch to All games and tap ☆ Track.':'No '+({in:"live",pre:"upcoming",post:"final"}[statusF]||"")+' '+L+' games in this view.')+'</div>'; }
+        '<div class="empty">'+(hideFinals&&finN&&(statusF==="all"||statusF==="post")?'All '+L+' games in this view are final — turn off “Hide finals” to see them.':view==="tracked"&&!tN?'No '+L+' games tracked yet — tap “Track all” or switch to All games and tap ☆ Track.':'No '+({in:"live",pre:"upcoming",post:"final"}[statusF]||"")+' '+L+' games in this view.')+'</div>'; }
     return '<section class="sec">'+head+body+'</section>';
   }).join("");
 }
@@ -509,6 +513,7 @@ function render(){
   document.querySelectorAll("#sportChips .chipbtn").forEach(b=>b.classList.toggle("is-active",!!sportsOn[b.dataset.sport]));
   document.querySelectorAll("#viewSeg button").forEach(b=>b.classList.toggle("is-active",b.dataset.view===view));
   document.querySelectorAll("#statusSeg button").forEach(b=>b.classList.toggle("is-active",b.dataset.status===statusF));
+  $("hideFinalsBtn").classList.toggle("is-active",hideFinals);
   document.querySelectorAll("#playSeg button").forEach(b=>b.classList.toggle("is-active",b.dataset.plays===playsMode));
   const tN=activeSports().reduce((a,s)=>a+events[s].filter(g=>tracked.has(g.id)).length,0);
   $("trackedCount").textContent=tN?"("+tN+")":"";
@@ -549,6 +554,7 @@ $("dayPrev").onclick=()=>changeDay(-1);
 $("dayNext").onclick=()=>changeDay(1);
 $("todayBtn").onclick=()=>changeDay(0);
 $("refreshBtn").onclick=()=>refresh();
+$("hideFinalsBtn").onclick=()=>{ hideFinals=!hideFinals; lsSet("gt_hideFinals",hideFinals); render(); };
 
 render(); refresh();
 </script>
