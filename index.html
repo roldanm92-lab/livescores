@@ -49,6 +49,23 @@
   .seg button{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:0;background:none;color:var(--ink2);padding:5px 11px;border-radius:7px}
   .seg button:hover{color:var(--ink)}
   .seg button.is-active{background:var(--accent);color:#fff}
+  .pickers{display:flex;gap:6px;flex-wrap:wrap}
+  .picker{position:relative}
+  .pk-btn .cv{font-size:10px;opacity:.7;margin-left:2px}
+  .pk-btn .n{font-weight:500;color:var(--ink3)}
+  .pk-btn.is-active{color:#5A52E0;border-color:#D4D1F7;background:#EEEDFC}
+  .pk-panel{position:absolute;top:calc(100% + 6px);left:0;z-index:30;width:300px;max-width:calc(100vw - 36px);background:var(--surface);
+    border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(20,24,28,.12);overflow:hidden}
+  .pk-actions{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line2);font-size:12px;color:var(--ink3)}
+  .pk-actions .sp{margin-left:auto}
+  .pk-list{max-height:340px;overflow-y:auto;padding:4px}
+  .pk-row{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer;font-size:13px}
+  .pk-row:hover{background:var(--raised)}
+  .pk-row input{width:16px;height:16px;accent-color:var(--accent);margin:0;flex-shrink:0;cursor:pointer}
+  .pk-row .m{font-weight:600}
+  .pk-row .st{margin-left:auto;font-size:11.5px;color:var(--ink3);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .pk-row .st.lv{color:var(--live);font-weight:600}
+  .pk-empty{padding:14px;font-size:12.5px;color:var(--ink3);text-align:center}
   .tabs{display:inline-flex;gap:4px;margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:3px}
   .tab{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:0;background:none;color:var(--ink2);padding:7px 16px;border-radius:8px}
   .tab.is-active{background:var(--accent);color:#fff}
@@ -156,6 +173,7 @@
       <button class="chipbtn" data-sport="nfl"><span class="fdot"></span>NFL</button>
       <button class="chipbtn" data-sport="nba"><span class="fdot"></span>NBA</button>
     </div>
+    <div class="pickers" id="pickers"></div>
     <div class="seg" id="viewSeg">
       <button data-view="all">All games</button>
       <button data-view="tracked">Tracked <span id="trackedCount"></span></button>
@@ -452,7 +470,39 @@ function renderPlays(){
   }).join("")+'</div>';
 }
 
+/* ===== per-sport game picker dropdowns ===== */
+let openPicker=null;
+function pickStatus(g){
+  if(g.state==="in") return '<span class="st lv">'+esc(g.detail)+'</span>';
+  if(g.state==="post") return '<span class="st">'+esc(g.detail||"Final")+'</span>';
+  return '<span class="st">'+esc(startET(g.date))+'</span>';
+}
+function renderPickers(){
+  const el=$("pickers"); const prev=el.querySelector(".pk-list"); const top=prev?prev.scrollTop:0;
+  el.innerHTML=activeSports().map(s=>{
+    const L=SPORTS[s].label, all=events[s].slice().sort(sortGames), n=all.filter(g=>tracked.has(g.id)).length;
+    let panel="";
+    if(openPicker===s){
+      const list=!loaded[s]?'<div class="pk-empty"><span class="spin">↻</span> Loading games…</div>':
+        (!all.length?'<div class="pk-empty">No '+L+' games on '+esc(dayLabel(slateDate()))+'.</div>':
+        all.map(g=>'<label class="pk-row"><input type="checkbox" data-pick="'+esc(g.id)+'"'+(tracked.has(g.id)?" checked":"")+'>'+
+          '<span class="m">'+esc(g.away.abbr+" @ "+g.home.abbr)+'</span>'+pickStatus(g)+'</label>').join(""));
+      panel='<div class="pk-panel"><div class="pk-actions"><span>'+n+' of '+all.length+' selected</span><span class="sp"></span>'+
+        '<button class="link" data-pickall="'+s+'">Select all</button><button class="link" data-picknone="'+s+'">None</button></div>'+
+        '<div class="pk-list">'+list+'</div></div>';
+    }
+    return '<div class="picker"><button class="chipbtn pk-btn'+(n?" is-active":"")+'" data-picker="'+s+'">'+L+' games <span class="n">'+
+      (loaded[s]?n+"/"+all.length:"…")+'</span><span class="cv">▾</span></button>'+panel+'</div>';
+  }).join("");
+  const nl=el.querySelector(".pk-list"); if(nl) nl.scrollTop=top;
+}
+function pickChanged(){ view="tracked"; lsSet("gt_view",view); saveTracked(); render(); }
+document.addEventListener("change",e=>{ const cb=e.target.closest("[data-pick]"); if(!cb) return;
+  cb.checked?tracked.add(cb.dataset.pick):tracked.delete(cb.dataset.pick); pickChanged(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&openPicker){ openPicker=null; render(); } });
+
 function render(){
+  renderPickers();
   $("subline").textContent=lastUpdated?("Updated "+lastUpdated.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})+" · tap a game for details"):"Pulling live scores…";
   $("dayLabel").textContent=dayOffset===0?"Today · "+dayLabel(slateDate()):dayLabel(slateDate());
   $("todayBtn").style.display=dayOffset===0?"none":"inline";
@@ -471,6 +521,12 @@ function render(){
 
 /* ===== events ===== */
 document.addEventListener("click",e=>{
+  const pk=e.target.closest("[data-picker]");
+  if(pk){ openPicker=openPicker===pk.dataset.picker?null:pk.dataset.picker; render(); return; }
+  const pa=e.target.closest("[data-pickall]"); if(pa){ events[pa.dataset.pickall].forEach(g=>tracked.add(g.id)); pickChanged(); return; }
+  const pn=e.target.closest("[data-picknone]"); if(pn){ events[pn.dataset.picknone].forEach(g=>tracked.delete(g.id)); pickChanged(); return; }
+  if(e.target.closest(".pk-panel")) return;
+  if(openPicker){ openPicker=null; render(); }
   const tr=e.target.closest("[data-track]");
   if(tr){ e.stopPropagation(); const id=tr.dataset.track; tracked.has(id)?tracked.delete(id):tracked.add(id); saveTracked(); render(); return; }
   const ta=e.target.closest("[data-trackall]"); if(ta){ events[ta.dataset.trackall].forEach(g=>tracked.add(g.id)); saveTracked(); render(); return; }
