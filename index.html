@@ -145,6 +145,37 @@
   .feed-txt{font-size:13.5px;color:var(--ink)}
   .feed-sub{margin-top:2px;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
   .feed-time{font-size:11px;color:var(--ink3);white-space:nowrap;margin-left:auto;padding-top:2px;font-variant-numeric:tabular-nums}
+  .bsum{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .bsum-title{font-family:Archivo,sans-serif;font-weight:700;font-size:16px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+  .lg{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+  .bgame{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .bgame-head{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--raised);border-bottom:1px solid var(--line2);flex-wrap:wrap}
+  .bgame-teams{font-family:Archivo,sans-serif;font-weight:700;font-size:14.5px}
+  .bgame-st{font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .bgame-sc{margin-left:auto;font-family:Archivo,sans-serif;font-weight:800;font-size:16px;font-variant-numeric:tabular-nums}
+  .bleg{padding:11px 14px;border-bottom:1px solid var(--line2)}
+  .bleg:last-child{border-bottom:0}
+  .bleg-top{display:flex;align-items:flex-start;gap:12px}
+  .bleg-main{flex:1;min-width:0}
+  .bplayer{font-weight:600;font-size:14.5px}
+  .bplayer .tm{font-size:11.5px;color:var(--ink3);font-weight:500;margin-left:5px}
+  .bprop{font-size:12.5px;color:var(--ink2);margin-top:1px}
+  .bright{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;max-width:55%}
+  .bval{font-family:Archivo,sans-serif;font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+  .bval .ln{font-size:12px;color:var(--ink3);font-weight:600}
+  .bdetail{font-size:11.5px;color:var(--ink3);text-align:right;font-variant-numeric:tabular-nums}
+  .bchip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
+  .bchip .dot{width:7px;height:7px}
+  .bbar{margin-top:8px;height:5px;border-radius:999px;background:var(--line2);overflow:hidden}
+  .bbar div{height:100%;border-radius:999px;transition:width .3s}
+  .cbets{margin-top:9px;padding-top:8px;border-top:1px dashed var(--line)}
+  .cbet{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:2px 0}
+  .cbet .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cbet .nm span{color:var(--ink2)}
+  .cbet .v{font-weight:700;font-variant-numeric:tabular-nums}
+  .card.has-bets{border-top:3px solid var(--accent)}
   .foot{margin-top:30px;font-size:11.5px;color:var(--ink3);text-align:center}
   .pulse{animation:pulse 1.5s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
@@ -189,16 +220,19 @@
   </div>
 
   <div class="tabs" id="tabs">
-    <button class="tab is-active" data-tab="games">Games</button>
+    <button class="tab" data-tab="bets">My Bets<span class="cnt" id="betCnt"></span></button>
+    <button class="tab" data-tab="games">Games</button>
     <button class="tab" data-tab="plays">Live plays<span class="cnt" id="liveCnt"></span></button>
   </div>
 
+  <div id="betsPane" style="display:none"><div id="bets"></div></div>
   <div id="gamesPane"><div id="games"></div></div>
   <div id="playsPane" style="display:none">
     <div class="feed-tools">
       <div class="seg" id="playSeg">
         <button data-plays="all" class="is-active">Every play</button>
         <button data-plays="scoring">Scoring only</button>
+        <button data-plays="mine">My players</button>
       </div>
       <span class="feed-note" id="feedNote"></span>
     </div>
@@ -215,7 +249,30 @@ const SPORTS = {
   nfl:{label:"NFL", slug:"football/nfl"},
   nba:{label:"NBA", slug:"basketball/nba"},
 };
-/* bets get added later — this build is the scoreboard only */
+/* ===== YOUR BETS =====
+   sport: "nfl" | "nba". team = the player's team; the game is found automatically on the day's scoreboard.
+   kinds  nba: pts reb ast tpm stl blk pr (pts+reb) pa (pts+ast) ra (reb+ast) pra q1_pts (1st-quarter points)
+          nfl: rec_yds receptions rush_yds pass_yds pass_tds any_td  */
+const BETS = [
+  { id:"b1", sport:"nfl", kind:"rec_yds", player:"Roschon Johnson",   team:"CHI", line:3.5,  side:"over", odds:null },
+  { id:"b2", sport:"nfl", kind:"any_td",  player:"Luther Burden III", team:"CHI", line:0.5,  side:"over", odds:null },
+  { id:"b3", sport:"nba", kind:"ast",     player:"Payton Pritchard",  team:"BOS", line:3.5,  side:"over", odds:null },
+  { id:"b4", sport:"nba", kind:"pr",      player:"Neemias Queta",     team:"BOS", line:17.5, side:"over", odds:null },
+  { id:"b5", sport:"nba", kind:"pts",     player:"Mitchell Robinson", team:"BOS", line:5.5,  side:"over", odds:null },
+  { id:"b6", sport:"nba", kind:"q1_pts",  player:"Day'Ron Sharpe",    team:"BKN", line:2.5,  side:"over", odds:"-200" },
+  { id:"b7", sport:"nba", kind:"q1_pts",  player:"Myles Turner",      team:"MIL", line:2.5,  side:"over", odds:"-137" },
+  { id:"b8", sport:"nba", kind:"stl",     player:"Saddiq Bey",        team:"NOP", line:0.5,  side:"over", odds:"-128" },
+  { id:"b9", sport:"nba", kind:"tpm",     player:"Pelle Larsson",     team:"MIA", line:0.5,  side:"over", odds:"-474" },
+];
+const TEAM_ALIAS = { nba:{NOP:"NO",NYK:"NY",GSW:"GS",SAS:"SA",UTA:"UTAH",PHO:"PHX",WAS:"WSH",BRK:"BKN"}, nfl:{WAS:"WSH",JAC:"JAX",LA:"LAR"} };
+const KIND = { pts:["PTS","points"], reb:["REB","rebounds"], ast:["AST","assists"], tpm:["3PM","3-pointers made"], stl:["STL","steals"],
+  blk:["BLK","blocks"], pr:["P+R","points + rebounds"], pa:["P+A","points + assists"], ra:["R+A","rebounds + assists"], pra:["PRA","pts + reb + ast"],
+  q1_pts:["1Q PTS","1st-quarter points"], rec_yds:["Rec Yds","receiving yards"], receptions:["Rec","receptions"], rush_yds:["Rush Yds","rushing yards"],
+  pass_yds:["Pass Yds","passing yards"], pass_tds:["Pass TD","passing TDs"], any_td:["TD","anytime TD"] };
+const BSTATUS = {
+  cleared:{label:"Cleared", fg:"#15784A",bg:"#E6F4EC",dot:"#1E9E5A"}, on_track:{label:"On track",fg:"#1D4ED8",bg:"#E9F0FE",dot:"#2563EB"},
+  behind:{label:"Behind", fg:"#946410",bg:"#FBF1DB",dot:"#C7891A"},  busted:{label:"Busted", fg:"#B42D45",bg:"#FBE8EC",dot:"#D03A52"},
+  pregame:{label:"Pregame",fg:"#586069",bg:"#F1F3F5",dot:"#A6AEB8"}, no_game:{label:"No game",fg:"#586069",bg:"#F1F3F5",dot:"#A6AEB8"} };
 
 /* ===== storage (safe) ===== */
 function lsGet(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v); }catch(_){ return d; } }
@@ -228,7 +285,8 @@ let view     = lsGet("gt_view","all");          // all | tracked
 let statusF  = lsGet("gt_status","all");        // all | in | pre | post
 let hideFinals = lsGet("gt_hideFinals",false);
 let playsMode= "all";                           // all | scoring
-let activeTab= "games", dayOffset=0;
+let activeTab= BETS.length?"bets":"games", dayOffset=0;
+let betLive={};
 let events={nfl:[],nba:[]}, loaded={nfl:false,nba:false}, errs={nfl:null,nba:null};
 let expanded={}, summaries={}, playLog={}, prevScores={}, bumped={};
 let lastUpdated=null, busy=false, timer=null, ticker=null, nextAt=0;
@@ -282,7 +340,8 @@ function extractPlays(sum,sport){
   arr.forEach((p,i)=>{ const id=String(p.id||p.sequenceNumber||i); if(seen[id]) return; seen[id]=1;
     out.push({ id, text:p.text||"", period:(p.period&&p.period.number)||0, clock:(p.clock&&p.clock.displayValue)||"",
       scoring:!!p.scoringPlay, type:(p.type&&p.type.text)||"", wall:p.wallclock?Date.parse(p.wallclock):null,
-      a:p.awayScore, h:p.homeScore, seq:i }); });
+      a:p.awayScore, h:p.homeScore, seq:i,
+      pid:String((p.participants&&p.participants[0]&&p.participants[0].athlete&&p.participants[0].athlete.id)||""), sv:+p.scoreValue||0 }); });
   return out;
 }
 function addToLog(g,p){
@@ -298,7 +357,7 @@ function ingestLastPlays(list){
 }
 async function loadSummary(g){
   try{ const sum=await fetchJSON(sumURL(g.sport,g.id)); const plays=extractPlays(sum,g.sport);
-    summaries[g.id]={plays,at:Date.now()}; plays.slice(-40).forEach(p=>addToLog(g,p)); }catch(_){}
+    summaries[g.id]={plays,box:(sum.boxscore&&sum.boxscore.players)||[],at:Date.now()}; plays.slice(-40).forEach(p=>addToLog(g,p)); }catch(_){}
 }
 function badge(p,sport){
   const t=((p.type||"")+" "+(p.text||"")).toLowerCase();
@@ -350,7 +409,7 @@ function findGame(id){ for(const s in events){ const g=events[s].find(x=>x.id===
 /* ===== refresh ===== */
 async function refresh(){
   if(busy) return; busy=true; $("refreshBtn").disabled=true;
-  const d=slateDate(); const sports=activeSports();
+  const d=slateDate(); const sports=[...new Set(activeSports().concat(BETS.map(b=>b.sport)))];
   await Promise.all(sports.map(async s=>{
     try{ const j=await fetchJSON(sbURL(s,d)); events[s]=(j.events||[]).map(ev=>parseEvent(ev,s)); errs[s]=null; ingestLastPlays(events[s]); }
     catch(e){ errs[s]=e; }
@@ -362,7 +421,9 @@ async function refresh(){
   // summaries: expanded cards, plus every live game in view while the Live plays tab is open
   const need=viewGamesAll().filter(g=>g.state!=="pre" && (
     (expanded[g.id] && (g.state==="in"||!summaries[g.id])) || (activeTab==="plays" && g.state==="in")));
-  await Promise.all(need.slice(0,24).map(loadSummary));
+  betGames().forEach(g=>{ if(g.state!=="pre" && (g.state==="in"||!summaries[g.id]) && !need.includes(g)) need.push(g); });
+  await Promise.all(need.slice(0,30).map(loadSummary));
+  computeBets();
   lastUpdated=new Date(); busy=false; $("refreshBtn").disabled=false;
   render(); scheduleNext();
 }
@@ -412,17 +473,20 @@ function recentPlaysHTML(g){
   return '<div class="sub-h">Recent plays</div>'+list.map(p=>{ const bd=badge(p,g.sport);
     return '<div class="mini-play"><span class="feed-badge" style="background:'+bd.bg+';color:'+bd.fg+'">'+esc(bd.label)+'</span><span style="flex:1">'+esc(p.text)+'</span><span class="clk">'+esc((p.period?"Q"+p.period+" ":"")+p.clock)+'</span></div>'; }).join("");
 }
+function cardBets(g){ const bs=betsForGame(g); if(!bs.length) return "";
+  return '<div class="cbets">'+bs.map(b=>{ const l=betLive[b.id]||{}; return '<div class="cbet"><span class="nm">'+esc(b.player)+' <span>'+esc(propText(b,true))+'</span></span>'+
+    (g.state!=="pre"?'<span class="v">'+esc(l.val||0)+'</span>':'')+bchip(l.status||"pregame")+'</div>'; }).join("")+'</div>'; }
 function card(g){
   const on=tracked.has(g.id), open=!!expanded[g.id];
   let sit="";
   if(g.state==="in" && g.sport==="nfl" && (g.sit.dd||g.sit.rz)) sit='<div class="sit">'+(g.sit.dd?'<span>'+esc(g.sit.dd)+'</span>':'')+(g.sit.rz?'<span class="rz">RED ZONE</span>':'')+'</div>';
   const last=(g.state==="in"&&g.sit.last)?'<div class="lastplay"><span class="lbl">LAST</span>'+esc(g.sit.last.length>170?g.sit.last.slice(0,167)+"…":g.sit.last)+'</div>':'';
   const foot=g.state==="pre"?[g.odds,g.venue].filter(Boolean).join(" · "):"";
-  return '<div class="card'+(on?" is-tracked":"")+(g.state==="in"?" is-live":"")+'">'+
+  return '<div class="card'+(betsForGame(g).length?" has-bets":"")+(on?" is-tracked":"")+(g.state==="in"?" is-live":"")+'">'+
     '<div class="c-main" data-expand="'+esc(g.id)+'">'+
       '<div class="c-top">'+statusHTML(g)+(g.bc?'<span class="c-bc">· '+esc(g.bc)+'</span>':'')+
         '<button class="star'+(on?" on":"")+'" data-track="'+esc(g.id)+'" title="'+(on?"Stop tracking":"Track this game")+'">'+(on?"★ Tracking":"☆ Track")+'</button></div>'+
-      teamRow(g,"away")+teamRow(g,"home")+sit+last+(foot?'<div class="c-foot">'+esc(foot)+'</div>':'')+
+      teamRow(g,"away")+teamRow(g,"home")+sit+last+cardBets(g)+(foot?'<div class="c-foot">'+esc(foot)+'</div>':'')+
     '</div>'+
     (open?'<div class="c-body">'+lineScoreHTML(g)+leadersHTML(g)+recentPlaysHTML(g)+(g.state==="pre"&&!g.leaders.length&&!g.away.leaders.length?'<div class="feed-note">Details appear once the game starts.</div>':'')+'</div>':'')+
   '</div>';
@@ -448,12 +512,113 @@ function renderGames(){
   }).join("");
 }
 
+/* ===== bets engine ===== */
+function norm(s){ return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z ]/g," ").replace(/\s+/g," ").trim(); }
+function numFrom(v){ const m=String(v==null?"":v).match(/^(-?\d+(?:\.\d+)?)/); return m?parseFloat(m[1]):0; }
+function teamAbbr(b){ return (TEAM_ALIAS[b.sport]&&TEAM_ALIAS[b.sport][b.team])||b.team; }
+function betGame(b){ const ab=teamAbbr(b); return (events[b.sport]||[]).find(g=>g.away.abbr===ab||g.home.abbr===ab)||null; }
+function betGames(){ const out=[]; BETS.forEach(b=>{ const g=betGame(b); if(g&&!out.includes(g)) out.push(g); }); return out; }
+function findAthlete(list,name){ const n=norm(name);
+  return list.find(a=>norm(a.athlete&&a.athlete.displayName)===n) ||
+    list.find(a=>{ const d=norm(a.athlete&&a.athlete.displayName); return d&&(d.includes(n)||n.includes(d)); }) || null; }
+function nbaStats(box,name){
+  for(const tb of box){ const cat=(tb.statistics||[])[0]; if(!cat) continue; const keys=cat.keys||[];
+    const a=findAthlete(cat.athletes||[],name); if(!a) continue; const st=a.stats||[];
+    const at=k=>{ const i=keys.indexOf(k); return i<0?0:numFrom(st[i]); };
+    const tpm=at("threePointFieldGoalsMade-threePointFieldGoalsAttempted");
+    return {found:true,id:String((a.athlete&&a.athlete.id)||""),dnp:!!a.didNotPlay||(!st.length),min:at("minutes"),
+      pts:at("points"),reb:at("rebounds"),ast:at("assists"),stl:at("steals"),blk:at("blocks"),tpm}; }
+  return {found:false};
+}
+function nflStats(box,name){
+  const s={found:false,pass_yds:0,pass_tds:0,rush_att:0,rush_yds:0,rush_tds:0,receptions:0,rec_yds:0,rec_tds:0,ret_tds:0};
+  box.forEach(tb=>(tb.statistics||[]).forEach(cat=>{
+    const a=findAthlete(cat.athletes||[],name); if(!a) return; s.found=true;
+    const labels=(cat.labels||[]).map(x=>String(x).toUpperCase()); const st=a.stats||[];
+    const at=l=>{ const i=labels.indexOf(l); return i<0?0:numFrom(st[i]); }; const cn=String(cat.name||"").toLowerCase();
+    if(cn==="passing"){ s.pass_yds+=at("YDS"); s.pass_tds+=at("TD"); }
+    else if(cn==="rushing"){ s.rush_att+=at("CAR"); s.rush_yds+=at("YDS"); s.rush_tds+=at("TD"); }
+    else if(cn==="receiving"){ s.receptions+=at("REC"); s.rec_yds+=at("YDS"); s.rec_tds+=at("TD"); }
+    else if(cn==="kickreturns"||cn==="puntreturns"){ s.ret_tds+=at("TD"); }
+  }));
+  s.any_td=s.rush_tds+s.rec_tds+s.ret_tds; return s;
+}
+function clockSecs(c){ const m=String(c||"").match(/^(\d+):(\d+)/); if(m) return +m[1]*60+(+m[2]); const f=parseFloat(c); return isNaN(f)?0:f; }
+function elapsedFrac(g){ const qlen=g.sport==="nba"?720:900; if(g.state==="post") return 1; if(!g.period) return 0;
+  if(/half/i.test(g.detail)) return 0.5; const p=Math.min(g.period,4); return Math.min(1,((p-1)*qlen+(qlen-clockSecs(g.clock)))/(4*qlen)); }
+function computeBets(){
+  BETS.forEach(b=>{
+    const g=betGame(b); if(!g){ betLive[b.id]={val:0,status:loaded[b.sport]?"no_game":"pregame",detail:loaded[b.sport]?"No game today":"",g:null}; return; }
+    if(g.state==="pre"){ betLive[b.id]={val:0,status:"pregame",detail:"Starts "+startET(g.date),g}; return; }
+    const sum=summaries[g.id]; const box=(sum&&sum.box)||[]; let val=0, detail="";
+    if(b.sport==="nba"){
+      const s=nbaStats(box,b.player);
+      if(!s.found){ detail=sum?"not in box score yet":"loading…"; }
+      else{
+        if(b.kind==="q1_pts"){ val=(sum.plays||[]).filter(p=>p.period===1&&p.scoring&&p.pid&&p.pid===s.id).reduce((a,p)=>a+(p.sv||0),0); }
+        else val=({pts:s.pts,reb:s.reb,ast:s.ast,tpm:s.tpm,stl:s.stl,blk:s.blk,pr:s.pts+s.reb,pa:s.pts+s.ast,ra:s.reb+s.ast,pra:s.pts+s.reb+s.ast})[b.kind]||0;
+        detail=(b.kind==="q1_pts"?"1Q: "+val+" pts · ":"")+s.pts+" PTS · "+s.reb+" REB · "+s.ast+" AST"+(s.tpm?" · "+s.tpm+" 3PM":"")+(s.stl?" · "+s.stl+" STL":"")+(s.min?" · "+s.min+" min":"");
+      }
+    }else{
+      const s=nflStats(box,b.player);
+      if(!s.found){ detail=sum?"no stats yet":"loading…"; }
+      else{
+        val=({rec_yds:s.rec_yds,receptions:s.receptions,rush_yds:s.rush_yds,pass_yds:s.pass_yds,pass_tds:s.pass_tds,any_td:s.any_td})[b.kind]||0;
+        const parts=[]; if(s.receptions||b.kind==="rec_yds"||b.kind==="receptions") parts.push(s.receptions+" rec, "+s.rec_yds+" yds");
+        if(s.rush_att) parts.push(s.rush_att+" rush, "+s.rush_yds+" yds"); if(s.pass_yds) parts.push(s.pass_yds+" pass yds");
+        if(s.any_td) parts.push(s.any_td+" TD"); detail=parts.join(" · ")||"no touches yet";
+      }
+    }
+    let status;
+    if(val>b.line) status="cleared";
+    else if(b.kind==="q1_pts") status=(g.state==="post"||g.period>=2)?"busted":"on_track";
+    else if(g.state==="post") status="busted";
+    else if(b.line<1) status="on_track";
+    else{ const f=elapsedFrac(g); status=(f>=0.25 && val/f<b.line)?"behind":"on_track"; }
+    betLive[b.id]={val,status,detail,g};
+  });
+}
+function propText(b,short){ const k=KIND[b.kind]||[b.kind,b.kind];
+  if(b.kind==="any_td") return "Anytime TD"+(!short&&b.odds?" · "+b.odds:"");
+  return (b.side==="under"?(short?"U":"Under "):(short?"O":"Over "))+b.line+" "+(short?k[0]:k[1])+(!short&&b.odds?" · "+b.odds:""); }
+function bchip(st){ const m=BSTATUS[st]||BSTATUS.pregame; return '<span class="bchip" style="background:'+m.bg+';color:'+m.fg+'"><span class="dot" style="background:'+m.dot+'"></span>'+m.label+'</span>'; }
+function betLegHTML(b){
+  const l=betLive[b.id]||{val:0,status:"pregame",detail:""}; const m=BSTATUS[l.status]||BSTATUS.pregame;
+  const pct=Math.max(0,Math.min(100,Math.round(l.val/Math.max(b.line,0.5)*100)));
+  return '<div class="bleg"><div class="bleg-top"><div class="bleg-main"><div class="bplayer">'+esc(b.player)+'<span class="tm">'+esc(b.team)+'</span></div>'+
+    '<div class="bprop">'+esc(propText(b))+'</div></div><div class="bright">'+bchip(l.status)+
+    (l.status!=="pregame"&&l.status!=="no_game"?'<span class="bval">'+esc(l.val)+' <span class="ln">/ '+esc(b.line)+'</span></span>':'')+
+    (l.detail?'<span class="bdetail">'+esc(l.detail)+'</span>':'')+'</div></div>'+
+    (l.status!=="pregame"&&l.status!=="no_game"?'<div class="bbar"><div style="width:'+pct+'%;background:'+m.dot+'"></div></div>':'')+'</div>';
+}
+function renderBets(){
+  const el=$("bets"); if(!BETS.length){ el.innerHTML='<div class="empty">No bets yet — paste a slip in the project chat.</div>'; return; }
+  const cnt={cleared:0,on_track:0,behind:0,busted:0,pregame:0,no_game:0};
+  BETS.forEach(b=>{ const st=(betLive[b.id]||{}).status||"pregame"; cnt[st]=(cnt[st]||0)+1; });
+  const lg=(k,lbl)=>cnt[k]?'<span class="lg"><span class="dot" style="background:'+BSTATUS[k].dot+'"></span>'+cnt[k]+' '+lbl+'</span>':'';
+  const title=cnt.cleared===BETS.length?"All legs cleared":(cnt.busted?cnt.busted+" busted · ":"")+(BETS.length-cnt.cleared)+" of "+BETS.length+" legs to go";
+  let html='<div class="bsum"><div class="bsum-title">'+title+'</div><div class="legend">'+lg("cleared","cleared")+lg("on_track","on track")+lg("behind","behind")+lg("busted","busted")+lg("pregame","pregame")+lg("no_game","no game")+'</div></div>';
+  const groups=[], byKey={};
+  BETS.forEach(b=>{ const g=betGame(b); const k=g?g.id:"none-"+b.sport; if(!byKey[k]){ byKey[k]={g,sport:b.sport,legs:[]}; groups.push(byKey[k]); } byKey[k].legs.push(b); });
+  groups.sort((a,b)=>!a.g?1:!b.g?-1:sortGames(a.g,b.g));
+  html+=groups.map(gr=>{ const g=gr.g; let head;
+    if(!g) head='<span class="bgame-teams">'+SPORTS[gr.sport].label+'</span><span class="bgame-st">'+(loaded[gr.sport]?"no game found for this team today":"loading…")+'</span>';
+    else{ const st=g.state==="in"?'<span class="live-tag"><span class="ld pulse"></span>LIVE</span> '+esc(g.detail):g.state==="post"?esc(g.detail||"Final"):esc(startET(g.date));
+      head='<span class="bgame-teams">'+esc(g.away.abbr+" @ "+g.home.abbr)+'</span><span class="bgame-st">'+SPORTS[g.sport].label+' · '+st+'</span>'+
+        (g.state!=="pre"?'<span class="bgame-sc">'+esc((g.away.score||0)+"–"+(g.home.score||0))+'</span>':''); }
+    return '<div class="bgame"><div class="bgame-head">'+head+'</div>'+gr.legs.map(betLegHTML).join("")+'</div>'; }).join("");
+  el.innerHTML=html;
+}
+function betsForGame(g){ return BETS.filter(b=>{ const bg=betGame(b); return bg&&bg.id===g.id; }); }
+function lastName(n){ const t=String(n).replace(/\s+(Jr|Sr|II|III|IV)\.?$/i,"").trim().split(/\s+/); return t[t.length-1]||n; }
+function isMyPlay(p){ return betsForGame({id:p.gid}).some(b=>p.text.toLowerCase().includes(lastName(b.player).toLowerCase())); }
+
 /* ===== render: live plays ===== */
 function renderPlays(){
-  const el=$("plays"); const games=viewGamesAll(); const ids=new Set(games.map(g=>g.id));
+  const el=$("plays"); const games=playsMode==="mine"?betGames():viewGamesAll(); const ids=new Set(games.map(g=>g.id));
   const liveG=games.filter(g=>g.state==="in");
   $("feedNote").textContent=liveG.length?("Following "+liveG.length+" live game"+(liveG.length===1?"":"s")+(view==="tracked"?" (tracked only)":"")):"";
-  let items=Object.values(playLog).filter(p=>ids.has(p.gid)&&(playsMode==="all"||p.scoring));
+  let items=Object.values(playLog).filter(p=>ids.has(p.gid)&&(playsMode==="all"||(playsMode==="scoring"&&p.scoring)||(playsMode==="mine"&&isMyPlay(p))));
   items.sort((a,b)=>((b.wall||b.seen)-(a.wall||a.seen))||(b.seq-a.seq));
   items=items.slice(0,150);
   if(!items.length){
@@ -521,7 +686,11 @@ function render(){
   $("liveCnt").textContent=liveN?" · "+liveN:"";
   $("gamesPane").style.display=activeTab==="games"?"block":"none";
   $("playsPane").style.display=activeTab==="plays"?"block":"none";
-  renderGames(); renderPlays();
+  $("betsPane").style.display=activeTab==="bets"?"block":"none";
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("is-active",x.dataset.tab===activeTab));
+  const done=BETS.filter(b=>(betLive[b.id]||{}).status==="cleared").length;
+  $("betCnt").textContent=BETS.length?" · "+done+"/"+BETS.length:"";
+  renderBets(); renderGames(); renderPlays();
 }
 
 /* ===== events ===== */
