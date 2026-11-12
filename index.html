@@ -221,11 +221,13 @@
 
   <div class="tabs" id="tabs">
     <button class="tab" data-tab="bets">My Bets<span class="cnt" id="betCnt"></span></button>
+    <button class="tab" data-tab="ab">A/B plays<span class="cnt" id="abCnt"></span></button>
     <button class="tab" data-tab="games">Games</button>
     <button class="tab" data-tab="plays">Live plays<span class="cnt" id="liveCnt"></span></button>
   </div>
 
   <div id="betsPane" style="display:none"><div id="bets"></div></div>
+  <div id="abPane" style="display:none"><div id="ab"></div></div>
   <div id="gamesPane"><div id="games"></div></div>
   <div id="playsPane" style="display:none">
     <div class="feed-tools">
@@ -409,7 +411,7 @@ function findGame(id){ for(const s in events){ const g=events[s].find(x=>x.id===
 /* ===== refresh ===== */
 async function refresh(){
   if(busy) return; busy=true; $("refreshBtn").disabled=true;
-  const d=slateDate(); const sports=[...new Set(activeSports().concat(BETS.map(b=>b.sport)))];
+  const d=slateDate(); const sports=[...new Set(activeSports().concat(BETS.map(b=>b.sport)).concat(["nba"]))];
   await Promise.all(sports.map(async s=>{
     try{ const j=await fetchJSON(sbURL(s,d)); events[s]=(j.events||[]).map(ev=>parseEvent(ev,s)); errs[s]=null; ingestLastPlays(events[s]); }
     catch(e){ errs[s]=e; }
@@ -422,8 +424,10 @@ async function refresh(){
   const need=viewGamesAll().filter(g=>g.state!=="pre" && (
     (expanded[g.id] && (g.state==="in"||!summaries[g.id])) || (activeTab==="plays" && g.state==="in")));
   betGames().forEach(g=>{ if(g.state!=="pre" && (g.state==="in"||!summaries[g.id]) && !need.includes(g)) need.push(g); });
+  await loadAB();
+  abGames().forEach(g=>{ if(g.state!=="pre" && (g.state==="in"||!summaries[g.id]) && !need.includes(g)) need.push(g); });
   await Promise.all(need.slice(0,30).map(loadSummary));
-  computeBets();
+  computeBets(); computeAB();
   lastUpdated=new Date(); busy=false; $("refreshBtn").disabled=false;
   render(); scheduleNext();
 }
@@ -527,7 +531,7 @@ function nbaStats(box,name){
     const at=k=>{ const i=keys.indexOf(k); return i<0?0:numFrom(st[i]); };
     const tpm=at("threePointFieldGoalsMade-threePointFieldGoalsAttempted");
     return {found:true,id:String((a.athlete&&a.athlete.id)||""),dnp:!!a.didNotPlay||(!st.length),min:at("minutes"),
-      pts:at("points"),reb:at("rebounds"),ast:at("assists"),stl:at("steals"),blk:at("blocks"),tpm}; }
+      pts:at("points"),reb:at("rebounds"),ast:at("assists"),stl:at("steals"),blk:at("blocks"),tpm,tov:at("turnovers"),pf:at("fouls")}; }
   return {found:false};
 }
 function nflStats(box,name){
@@ -613,6 +617,107 @@ function betsForGame(g){ return BETS.filter(b=>{ const bg=betGame(b); return bg&
 function lastName(n){ const t=String(n).replace(/\s+(Jr|Sr|II|III|IV)\.?$/i,"").trim().split(/\s+/); return t[t.length-1]||n; }
 function isMyPlay(p){ return betsForGame({id:p.gid}).some(b=>p.text.toLowerCase().includes(lastName(b.player).toLowerCase())); }
 
+
+/* ===== A/B plays (Props Lab grades + our projection check), from ab_check.json =====
+   ab_check.json is written by prop_projections.py on the PC (NBA LIVE folder). Live chance = remaining-minutes model
+   (time left, minutes so far vs pace, score margin, fouls) x per-minute rate blended with tonight's, same as live_props.py. */
+let AB={date:null,plays:[],phi:{},err:null,at:0}, abLive={};
+const AB_MIN={cols:["c","Mr","ahead","blow","blow_lead","pf","pf_trouble","pf5","on","remt"],coefs:{"1":[6.3277,0.6784,-0.014,-0.0873,-0.3765,-0.5766,0.0853,0,1.598,0.0003],"2":[-0.0547,0.6837,0.4247,-0.2454,0.053,-0.3588,-0.1622,0,1.7752,0.1446],"3":[0.2219,0.7747,0.6935,-0.2701,0.016,-0.4543,-0.4364,0,1.1097,0.1057],"4":[0.8362,0.8258,0.4487,-0.202,-0.039,-0.5271,-0.4414,0,1.2129,0.0667],"5":[-0.9561,0.7809,0.5094,-0.1785,-0.0279,-0.2439,-0.1751,0,1.9783,0.1265],"6":[-0.0733,0.6884,0.3853,-0.2496,0.0045,-0.0655,-0.3671,-0.0945,0.7392,0.1533],"7":[0.6519,0.514,0.129,-0.2737,0.0102,-0.1263,-0.3988,-0.324,0.5602,0.2102],"8":[0.5824,0.4767,0.0694,-0.2635,0.0123,-0.0431,-0.2129,-0.3088,1.4251,0.2035],"9":[-0.2437,0.5284,0.0581,-0.2205,0.0055,-0.088,-0.1065,-0.1583,2.1512,0.2192],"10":[-0.2252,0.4394,0.0217,-0.1665,0.0034,-0.1545,-0.0798,-0.0231,2.1859,0.2543],"11":[-0.5139,0.1003,-0.0003,-0.0501,-0.0022,-0.0507,-0.0173,-0.1813,2.0483,0.3817]},sd:{"1":5.754,"2":5.455,"3":5.117,"4":4.955,"5":4.351,"6":4.05,"7":4.044,"8":3.632,"9":3.059,"10":2.365,"11":1.173}};
+const AB_PARTS={pts:["pts"],reb:["reb"],ast:["ast"],tpm:["fg3m"],stl:["stl"],blk:["blk"],tov:["tov"],pr:["pts","reb"],pa:["pts","ast"],ra:["reb","ast"],pra:["pts","reb","ast"],sb:["stl","blk"]};
+const AB_LBL={pts:"PTS",reb:"REB",ast:"AST",tpm:"3PM",stl:"STL",blk:"BLK",tov:"TO",pr:"P+R",pa:"P+A",ra:"R+A",pra:"PRA",sb:"S+B",q1_pts:"1Q PTS",q1_reb:"1Q REB",q1_ast:"1Q AST",dd:"Dbl-dbl"};
+const AB_CHECK={"STRONG AGREE":{fg:"#15784A",bg:"#E6F4EC",tip:"Our projection is 10+ points above the price. Review: 62% hit, +21% ROI"},
+  "AGREE":{fg:"#1D4ED8",bg:"#E9F0FE",tip:"5+ points above the price. Review: 56% hit, +10% ROI"},
+  "close":{fg:"#586069",bg:"#F1F3F5",tip:"Within 5 points of the price"},
+  "DISAGREE":{fg:"#B42D45",bg:"#FBE8EC",tip:"5+ points below the price. Review: 47% hit, -12% ROI - skip"},
+  "no projection":{fg:"#586069",bg:"#F1F3F5",tip:"1st-quarter and special markets aren't projected"}};
+async function loadAB(){
+  if(Date.now()-AB.at<120000 && AB.date) return;
+  try{ const j=await fetchJSON("ab_check.json?t="+Date.now()); AB=Object.assign({},j,{err:null,at:Date.now()}); }
+  catch(e){ AB.err=e; AB.at=Date.now(); }
+}
+function abShown(){ return AB.date===slateDate()? (AB.plays||[]) : []; }
+function abGame(p){ return betGame({sport:"nba",team:p.team}); }
+function abGames(){ const out=[]; abShown().forEach(p=>{ const g=abGame(p); if(g&&!out.includes(g)) out.push(g); }); return out; }
+function gElapsed(g){ if(g.state==="post") return 2880; if(!g.period) return 0; if(/half/i.test(g.detail)) return 1440;
+  const c=clockSecs(g.clock), p=g.period; return p<=4 ? (p-1)*720+(720-c) : 2880+(p-5)*300+(300-c); }
+function randn(){ let u=0,v=0; while(!u) u=Math.random(); while(!v) v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+function rgamma(k,th){ if(k<1){ return rgamma(k+1,th)*Math.pow(Math.random(),1/k); } const d=k-1/3, c=1/Math.sqrt(9*d);
+  for(;;){ let x,v; do{ x=randn(); v=1+c*x; }while(v<=0); v=v*v*v; const u=Math.random(); if(u<1-0.0331*x*x*x*x||Math.log(u)<0.5*x*x+d*(1-v+Math.log(v))) return d*v*th; } }
+function rpois(l){ if(l<=0) return 0; if(l>40) return Math.max(0,Math.round(l+Math.sqrt(l)*randn())); const L=Math.exp(-l); let k=0,p=1; do{ k++; p*=Math.random(); }while(p>L); return k-1; }
+function abRemaining(M,m,on,pf,margin,e,period){
+  if(e>=2880){ const remt=Math.max(0,(2880+(period-4)*300-e)/60); return [(on?0.85:0.1)*remt,0.8,remt]; }
+  const remt=(2880-e)/60, r=remt/48;
+  const x={c:1,Mr:M*r,ahead:m-M*(1-r),blow:Math.max(Math.abs(margin)-12,0)*M/36,blow_lead:Math.max(margin-12,0)*M/36,pf,
+    pf_trouble:Math.max(0,pf-(1+5*(1-r))),pf5:pf>=5?1:0,on,remt};
+  const b=String(Math.min(11,Math.max(1,Math.floor(e/240)))); const co=AB_MIN.coefs[b];
+  let mu=0; AB_MIN.cols.forEach((k,i)=>{ mu+=co[i]*x[k]; });
+  return [Math.max(0,Math.min(remt+2,mu)),AB_MIN.sd[b]*1.2,remt];
+}
+function abChance(p,cur,mu,sd,remt){
+  const parts=AB_PARTS[p.kind]; if(!parts||!p.live) return null; const N=2500; let over=0, now=0;
+  parts.forEach(s=>{ now+=cur[s]||0; });
+  for(let i=0;i<N;i++){ const rm=Math.max(0,Math.min(remt+1,mu+sd*randn())); let tot=now;
+    parts.forEach(s=>{ const pre=p.live.rates[s]||0, rate=(pre*90+(cur[s]||0))/(90+cur.min), mean=rate*rm, ph=(AB.phi||{})[s]||1;
+      tot+= ph>1.01 ? rpois(rgamma(Math.max(mean,1e-9)/(ph-1),ph-1)) : rpois(mean); });
+    if(tot>p.line) over++; }
+  return over/N;
+}
+function computeAB(){
+  abLive={};
+  abShown().forEach((p,i)=>{
+    const g=abGame(p); if(!g||g.state==="pre"){ abLive[i]={status:"pregame",g}; return; }
+    const sum=summaries[g.id], s=nbaStats((sum&&sum.box)||[],p.player);
+    if(!s.found){ abLive[i]={status:"live",g,note:sum?"not in box score yet":"loading…"}; return; }
+    const cur={pts:s.pts,reb:s.reb,ast:s.ast,fg3m:s.tpm,stl:s.stl,blk:s.blk,tov:s.tov||0,min:s.min||0};
+    let val=null;
+    if(AB_PARTS[p.kind]) val=AB_PARTS[p.kind].reduce((a,k)=>a+(cur[k]||0),0);
+    else if(p.kind==="q1_pts") val=(sum.plays||[]).filter(x=>x.period===1&&x.scoring&&x.pid&&x.pid===s.id).reduce((a,x)=>a+(x.sv||0),0);
+    let chance=null, mu=null;
+    if(g.state==="post"||(p.kind.startsWith("q1")&&g.period>=2)) chance= val==null?null:(val>p.line?1:0);
+    else if(val!=null&&val>p.line) chance=1;
+    else if(AB_PARTS[p.kind]&&p.live){
+      const isHome=teamAbbr({sport:"nba",team:p.team})===g.home.abbr, margin=isHome?(+g.home.score||0)-(+g.away.score||0):(+g.away.score||0)-(+g.home.score||0);
+      const r=abRemaining(p.live.min,cur.min,0.5,s.pf||0,margin,gElapsed(g),g.period||1); mu=r[0];
+      chance=abChance(p,cur,r[0],r[1],r[2]);
+    }
+    abLive[i]={status:g.state==="post"?"final":"live",g,val,chance,mu,min:cur.min,pf:s.pf||0};
+  });
+}
+function abChip(c){ const m=AB_CHECK[c]||AB_CHECK.close; return '<span class="bchip" title="'+esc(m.tip)+'" style="background:'+m.bg+';color:'+m.fg+'">'+esc(c)+'</span>'; }
+function abPct(x){ return x==null?"–":Math.round(x*100)+"%"; }
+function renderAB(){
+  const el=$("ab"); const list=abShown();
+  $("abCnt").textContent=list.length?" · "+list.length:"";
+  if(!list.length){ el.innerHTML='<div class="empty">'+(AB.err?"No A/B list found (ab_check.json). Run Prop Projections.bat on the PC.":
+      AB.date?"The A/B list is for "+esc(dayLabel(AB.date))+" — run Prop Projections.bat after today’s scrape.":"Loading A/B plays…")+'</div>'; return; }
+  const cnt={}; list.forEach(p=>{ cnt[p.check]=(cnt[p.check]||0)+1; });
+  let html='<div class="bsum"><div class="bsum-title">'+list.length+' Props Lab A/B plays · our check</div><div class="legend">'+
+    ["STRONG AGREE","AGREE","close","DISAGREE","no projection"].filter(k=>cnt[k]).map(k=>'<span class="lg">'+abChip(k)+' '+cnt[k]+'</span>').join("")+
+    '</div><div class="bdetail" style="margin-top:6px">Props Lab '+esc(AB.scraped_at||"")+' · checked '+esc(AB.made||"")+'. Review of 1,261 past A/B plays: agree +10% ROI, strong agree +21%, disagree −12%. Not proven yet.</div></div>';
+  const groups=[], byKey={};
+  list.forEach((p,i)=>{ const g=abGame(p); const k=g?g.id:"none"; if(!byKey[k]){ byKey[k]={g,rows:[]}; groups.push(byKey[k]); } byKey[k].rows.push([p,i]); });
+  groups.sort((a,b)=>!a.g?1:!b.g?-1:sortGames(a.g,b.g));
+  const order={"STRONG AGREE":0,"AGREE":1,"close":2,"no projection":3,"DISAGREE":4};
+  html+=groups.map(gr=>{ const g=gr.g;
+    const head=!g?'<span class="bgame-teams">NBA</span><span class="bgame-st">game not found today</span>':
+      '<span class="bgame-teams">'+esc(g.away.abbr+" @ "+g.home.abbr)+'</span><span class="bgame-st">'+(g.state==="in"?'<span class="live-tag"><span class="ld pulse"></span>LIVE</span> '+esc(g.detail):g.state==="post"?esc(g.detail||"Final"):esc(startET(g.date)))+'</span>'+
+      (g.state!=="pre"?'<span class="bgame-sc">'+esc((g.away.score||0)+"–"+(g.home.score||0))+'</span>':'');
+    gr.rows.sort((a,b)=>order[a[0].check]-order[b[0].check]);
+    return '<div class="bgame"><div class="bgame-head">'+head+'</div>'+gr.rows.map(([p,i])=>{
+      const l=abLive[i]||{}; let live="";
+      if(l.status==="live"||l.status==="final"){
+        const c=l.chance, col=c==null?"var(--ink3)":c>=0.6?"#15784A":c<=0.4?"#B42D45":"#946410";
+        live='<div class="bdetail">'+(l.note?esc(l.note):('Now <b>'+esc(l.val==null?"–":l.val)+'</b> / '+esc(p.line)+(l.min!=null?' · '+Math.round(l.min)+' min':'')+(l.mu!=null&&l.status==="live"?' · ~'+Math.round(l.mu)+' left':'')+(l.pf>=4?' · '+l.pf+' PF':'')+
+          ' · <b style="color:'+col+'">'+(l.status==="final"?(c===1?"Hit":c===0?"Missed":"–"):'Live chance '+abPct(c))+'</b>'))+'</div>';
+      }
+      return '<div class="bleg"><div class="bleg-top"><div class="bleg-main"><div class="bplayer"><span class="tm" style="margin:0 6px 0 0;font-weight:700">'+esc(p.grade)+'</span>'+esc(p.player)+'<span class="tm">'+esc(p.team)+'</span></div>'+
+        '<div class="bprop">Over '+esc(p.line)+' '+esc(AB_LBL[p.kind]||p.market)+' · '+esc(p.odds)+'</div>'+
+        '<div class="bdetail">Price '+abPct(p.price)+' · Lab '+abPct(p.lab)+' · Ours '+abPct(p.ours)+(p.proj!=null?' (proj '+esc(p.proj)+')':'')+'</div>'+live+
+        '</div><div class="bright">'+abChip(p.check)+'</div></div></div>';
+    }).join("")+'</div>'; }).join("");
+  el.innerHTML=html;
+}
+
 /* ===== render: live plays ===== */
 function renderPlays(){
   const el=$("plays"); const games=playsMode==="mine"?betGames():viewGamesAll(); const ids=new Set(games.map(g=>g.id));
@@ -687,10 +792,11 @@ function render(){
   $("gamesPane").style.display=activeTab==="games"?"block":"none";
   $("playsPane").style.display=activeTab==="plays"?"block":"none";
   $("betsPane").style.display=activeTab==="bets"?"block":"none";
+  $("abPane").style.display=activeTab==="ab"?"block":"none";
   document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("is-active",x.dataset.tab===activeTab));
   const done=BETS.filter(b=>(betLive[b.id]||{}).status==="cleared").length;
   $("betCnt").textContent=BETS.length?" · "+done+"/"+BETS.length:"";
-  renderBets(); renderGames(); renderPlays();
+  renderBets(); renderAB(); renderGames(); renderPlays();
 }
 
 /* ===== events ===== */

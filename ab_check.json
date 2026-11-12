@@ -1,0 +1,380 @@
+{
+"date": "2026-11-12",
+"scraped_at": "2026-11-12 15:02",
+"made": "2026-11-12 18:42",
+"plays": [
+{
+"player": "Ryan Kalkbrenner",
+"team": "CHA",
+"opp": "PHX",
+"kind": "pra",
+"market": "Pts + Reb + Ast",
+"line": 10.5,
+"odds": "-137",
+"grade": "B",
+"price": 0.578,
+"lab": 0.631,
+"ours": 0.791,
+"proj": 15.7,
+"check": "STRONG AGREE",
+"live": {
+"min": 18.4,
+"msd": 5.3,
+"rates": {
+"pts": 0.3103,
+"reb": 0.2977,
+"ast": 0.0891,
+"fg3m": 0.0111,
+"stl": 0.028,
+"blk": 0.0604,
+"tov": 0.0734
+}
+}
+},
+{
+"player": "Duncan Robinson",
+"team": "DET",
+"opp": "WAS",
+"kind": "pa",
+"market": "Pts + Ast",
+"line": 17.5,
+"odds": "-109",
+"grade": "B",
+"price": 0.522,
+"lab": 0.549,
+"ours": 0.657,
+"proj": 21.2,
+"check": "STRONG AGREE",
+"live": {
+"min": 30.9,
+"msd": 6.9,
+"rates": {
+"pts": 0.601,
+"reb": 0.0782,
+"ast": 0.0847,
+"fg3m": 0.12,
+"stl": 0.046,
+"blk": 0.0063,
+"tov": 0.0333
+}
+}
+},
+{
+"player": "Ryan Kalkbrenner",
+"team": "CHA",
+"opp": "PHX",
+"kind": "pts",
+"market": "Points",
+"line": 5.5,
+"odds": "+100",
+"grade": "B",
+"price": 0.5,
+"lab": 0.593,
+"ours": 0.587,
+"proj": 6.9,
+"check": "AGREE",
+"live": {
+"min": 18.4,
+"msd": 5.3,
+"rates": {
+"pts": 0.3103,
+"reb": 0.2977,
+"ast": 0.0891,
+"fg3m": 0.0111,
+"stl": 0.028,
+"blk": 0.0604,
+"tov": 0.0734
+}
+}
+},
+{
+"player": "Bilal Coulibaly",
+"team": "WAS",
+"opp": "DET",
+"kind": "pr",
+"market": "Pts + Reb",
+"line": 10.5,
+"odds": "-110",
+"grade": "A",
+"price": 0.524,
+"lab": 0.608,
+"ours": 0.509,
+"proj": 11.1,
+"check": "close",
+"live": {
+"min": 23.8,
+"msd": 5.5,
+"rates": {
+"pts": 0.2985,
+"reb": 0.1697,
+"ast": 0.0419,
+"fg3m": 0.0192,
+"stl": 0.0441,
+"blk": 0.0388,
+"tov": 0.0387
+}
+}
+},
+{
+"player": "Bilal Coulibaly",
+"team": "WAS",
+"opp": "DET",
+"kind": "pts",
+"market": "Points",
+"line": 6.5,
+"odds": "-120",
+"grade": "A",
+"price": 0.545,
+"lab": 0.624,
+"ours": 0.504,
+"proj": 7.1,
+"check": "close",
+"live": {
+"min": 23.8,
+"msd": 5.5,
+"rates": {
+"pts": 0.2985,
+"reb": 0.1697,
+"ast": 0.0419,
+"fg3m": 0.0192,
+"stl": 0.0441,
+"blk": 0.0388,
+"tov": 0.0387
+}
+}
+},
+{
+"player": "Moussa Diabaté",
+"team": "CHA",
+"opp": "PHX",
+"kind": "ra",
+"market": "Reb + Ast",
+"line": 10.5,
+"odds": "-115",
+"grade": "B",
+"price": 0.535,
+"lab": 0.581,
+"ours": 0.567,
+"proj": 11.8,
+"check": "close",
+"live": {
+"min": 28.6,
+"msd": 7.1,
+"rates": {
+"pts": 0.3489,
+"reb": 0.3082,
+"ast": 0.0785,
+"fg3m": 0.0093,
+"stl": 0.0427,
+"blk": 0.0287,
+"tov": 0.064
+}
+}
+},
+{
+"player": "Walter Clayton Jr.",
+"team": "DAL",
+"opp": "MIN",
+"kind": "pra",
+"market": "Pts + Reb + Ast",
+"line": 11.5,
+"odds": "-137",
+"grade": "B",
+"price": 0.578,
+"lab": 0.611,
+"ours": 0.599,
+"proj": 14.0,
+"check": "close",
+"live": {
+"min": 16.4,
+"msd": 6.3,
+"rates": {
+"pts": 0.45,
+"reb": 0.2137,
+"ast": 0.1859,
+"fg3m": 0.0714,
+"stl": 0.0452,
+"blk": 0.0184,
+"tov": 0.0835
+}
+}
+},
+{
+"player": "Immanuel Quickley",
+"team": "TOR",
+"opp": "PHI",
+"kind": "ast",
+"market": "Assists",
+"line": 5.5,
+"odds": "+120",
+"grade": "B",
+"price": 0.455,
+"lab": 0.518,
+"ours": 0.419,
+"proj": 5.3,
+"check": "close",
+"live": {
+"min": 31.0,
+"msd": 7.1,
+"rates": {
+"pts": 0.5265,
+"reb": 0.1309,
+"ast": 0.1666,
+"fg3m": 0.0717,
+"stl": 0.0316,
+"blk": 0.003,
+"tov": 0.0416
+}
+}
+},
+{
+"player": "Santi Aldama",
+"team": "DAL",
+"opp": "MIN",
+"kind": "pts",
+"market": "Points",
+"line": 7.5,
+"odds": "-113",
+"grade": "B",
+"price": 0.531,
+"lab": 0.619,
+"ours": 0.484,
+"proj": 7.9,
+"check": "close",
+"live": {
+"min": 15.0,
+"msd": 4.3,
+"rates": {
+"pts": 0.5318,
+"reb": 0.2729,
+"ast": 0.0651,
+"fg3m": 0.0557,
+"stl": 0.0293,
+"blk": 0.0142,
+"tov": 0.1118
+}
+}
+},
+{
+"player": "Joel Embiid",
+"team": "PHI",
+"opp": "TOR",
+"kind": "q1_pts",
+"market": "1Q Points",
+"line": 5.5,
+"odds": "-115",
+"grade": "B",
+"price": 0.535,
+"lab": 0.601,
+"ours": null,
+"proj": null,
+"check": "no projection",
+"live": {
+"min": 30.9,
+"msd": 7.1,
+"rates": {
+"pts": 0.554,
+"reb": 0.2712,
+"ast": 0.1172,
+"fg3m": 0.0177,
+"stl": 0.0232,
+"blk": 0.0222,
+"tov": 0.1063
+}
+}
+},
+{
+"player": "Moussa Diabaté",
+"team": "CHA",
+"opp": "PHX",
+"kind": "q1_pts",
+"market": "1Q Points",
+"line": 1.5,
+"odds": "-210",
+"grade": "B",
+"price": 0.677,
+"lab": 0.739,
+"ours": null,
+"proj": null,
+"check": "no projection",
+"live": {
+"min": 28.6,
+"msd": 7.1,
+"rates": {
+"pts": 0.3489,
+"reb": 0.3082,
+"ast": 0.0785,
+"fg3m": 0.0093,
+"stl": 0.0427,
+"blk": 0.0287,
+"tov": 0.064
+}
+}
+},
+{
+"player": "Coby White",
+"team": "CHA",
+"opp": "PHX",
+"kind": "pa",
+"market": "Pts + Ast",
+"line": 17.5,
+"odds": "-127",
+"grade": "A",
+"price": 0.559,
+"lab": 0.618,
+"ours": 0.179,
+"proj": 12.5,
+"check": "DISAGREE",
+"live": {
+"min": 14.5,
+"msd": 4.1,
+"rates": {
+"pts": 0.4636,
+"reb": 0.1855,
+"ast": 0.1816,
+"fg3m": 0.0443,
+"stl": 0.0153,
+"blk": 0.0202,
+"tov": 0.1386
+}
+}
+},
+{
+"player": "Coby White",
+"team": "CHA",
+"opp": "PHX",
+"kind": "pra",
+"market": "Pts + Reb + Ast",
+"line": 20.5,
+"odds": "-115",
+"grade": "B",
+"price": 0.535,
+"lab": 0.581,
+"ours": 0.23,
+"proj": 16.1,
+"check": "DISAGREE",
+"live": {
+"min": 14.5,
+"msd": 4.1,
+"rates": {
+"pts": 0.4636,
+"reb": 0.1855,
+"ast": 0.1816,
+"fg3m": 0.0443,
+"stl": 0.0153,
+"blk": 0.0202,
+"tov": 0.1386
+}
+}
+}
+],
+"phi": {
+"pts": 2.0,
+"reb": 1.5,
+"ast": 1.5,
+"fg3m": 1.5,
+"stl": 1.0,
+"blk": 1.0,
+"tov": 1.0
+}
+}
